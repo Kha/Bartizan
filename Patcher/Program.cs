@@ -51,7 +51,7 @@ namespace Patcher
 									if (typeMapping.ContainsKey(ctor.DeclaringType.FullName))
 										instr.Operand = baseModule.Import(typeMapping[ctor.DeclaringType.FullName].Methods.Single((m => m.IsConstructor)));
 								}
-				baseModule.Write("ModTowerFall.exe");
+				baseModule.Write("TowerFall.exe");
 			}
 		}
 	}
