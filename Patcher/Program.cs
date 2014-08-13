@@ -40,17 +40,27 @@ namespace Patcher
 		{
 			var baseModule = ModuleDefinition.ReadModule("BaseTowerFall.exe");
 			var modModule = ModuleDefinition.ReadModule("Mod.dll");
-			// replace all object creations in BaseTowerFall with the respective derived class in Mod, if any.
-			var typeMapping = modModule.Types.Where(t => t.BaseType != null).ToDictionary(t => t.BaseType.FullName);
+			var modTypes = modModule.Types.Where(t => t.BaseType != null).ToList();
+			var typeMapping = modTypes.ToDictionary(t => t.BaseType.FullName);
+
 			foreach (TypeDefinition type in baseModule.Types.SelectMany(AllNestedTypes))
 				foreach (var method in type.Methods)
 					if (method.HasBody)
-						foreach (var instr in method.Body.Instructions)
-							if (instr.OpCode == OpCodes.Newobj) {
-								var ctor = (MethodReference)instr.Operand;
-								if (typeMapping.ContainsKey(ctor.DeclaringType.FullName))
-									instr.Operand = baseModule.Import(typeMapping[ctor.DeclaringType.FullName].Methods.Single((m => m.IsConstructor)));
+						foreach (var instr in method.Body.Instructions) {
+							var callee = instr.Operand as MethodReference;
+							TypeDefinition modType;
+							if (callee != null && typeMapping.TryGetValue(callee.DeclaringType.FullName, out modType)) {
+								if (instr.OpCode == OpCodes.Newobj) {
+									// replace all object creations in BaseTowerFall with the respective derived class in Mod, if any.
+									instr.Operand = baseModule.Import(modType.Methods.Single((m => m.IsConstructor)));
+								} else if (instr.OpCode == OpCodes.Call) {
+									// make instance method calls to overriden methods virtual
+									var overrider = modType.Methods.SingleOrDefault(m => m.Name == callee.Name);
+									if (overrider != null && overrider.DeclaringType == modType)
+										instr.OpCode = OpCodes.Callvirt;
+								}
 							}
+						}
 			baseModule.Write("TowerFall.exe");
 		}
 

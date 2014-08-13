@@ -19,10 +19,10 @@ namespace Mod
 	{
 		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatState hatState, bool frozen = true) : base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen) {}
 
-		public override void BouncedOn(TowerFall.Player bouncer)
+		public override void HurtBouncedOn(int bouncerIndex)
 		{
 			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce)
-				base.BouncedOn(bouncer);
+				base.HurtBouncedOn(bouncerIndex);
 		}
 	}
 }
