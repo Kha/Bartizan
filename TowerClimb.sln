@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher", "Patcher\Patcher.csproj", "{B1DF3728-5F4C-4987-8213-4DCE21255B0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Release|x86.Build.0 = Release|Any CPU
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Debug|x86.ActiveCfg = Debug|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Debug|x86.Build.0 = Debug|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Release|x86.ActiveCfg = Release|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Patcher\Patcher.csproj
+	EndGlobalSection
+EndGlobal
