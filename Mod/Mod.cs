@@ -30,7 +30,6 @@ namespace Mod
 			return base.CanGrabLedge(a, b);
 		}
 
-		// We have to use this method because EnterDodge() currently can't be hooked
 		public override int GetDodgeExitState()
 		{
 			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).NoDodgeCooldowns) {

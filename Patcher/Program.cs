@@ -58,6 +58,12 @@ namespace Patcher
 									var overrider = modType.Methods.SingleOrDefault(m => m.Name == callee.Name);
 									if (overrider != null && overrider.DeclaringType == modType)
 										instr.OpCode = OpCodes.Callvirt;
+								} else if (instr.OpCode == OpCodes.Ldftn) {
+									// Some methods are called as callbacks, which are established by getting the method via ldftn.
+									// In such cases we have to reroute the ldftn to our own class
+									var overrider = modType.Methods.SingleOrDefault(m => m.Name == callee.Name);
+									if (overrider != null && overrider.DeclaringType == modType)
+										instr.Operand = baseModule.Import(overrider);
 								}
 							}
 						}
