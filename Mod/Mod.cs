@@ -15,6 +15,7 @@ namespace Mod
 		public MyMatchVariants()
 		{
 			this.CreateLinks(NoHeadBounce, NoTimeLimit);
+			this.CreateLinks(NoDodgeCooldowns, ShowDodgeCooldown);
 		}
 	}
 
