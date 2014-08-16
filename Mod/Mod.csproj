@@ -60,4 +60,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Patcher\Patcher.csproj">
+      <Project>{B1DF3728-5F4C-4987-8213-4DCE21255B0F}</Project>
+      <Name>Patcher</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

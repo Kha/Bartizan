@@ -9,7 +9,9 @@ using System.Xml.Linq;
 
 namespace Patcher
 {
-	class MainClass
+	public class PatchAttribute : Attribute {}
+
+	class Patcher
 	{
 		static IEnumerable<TypeDefinition> AllNestedTypes(TypeDefinition type)
 		{
@@ -19,10 +21,17 @@ namespace Patcher
 					yield return moarNested;
 		}
 
+		static IEnumerable<TypeDefinition> AllNestedTypes(ModuleDefinition module)
+		{
+			return module.Types.SelectMany(AllNestedTypes);
+		}
+
+		/// <summary>
+		/// Unseal, publicize, virtualize.
+		/// </summary>
 		static void MakeBaseImage()
 		{
-			// unseal, publicize, virtualize
-			var module = ModuleDefinition.ReadModule("OrigTowerFall.exe");
+			var module = ModuleDefinition.ReadModule("Original/TowerFall.exe");
 			foreach (var type in module.GetTypes()) {
 				type.IsSealed = false;
 				foreach (var field in type.Fields)
@@ -36,40 +45,98 @@ namespace Patcher
 			module.Write("BaseTowerFall.exe");
 		}
 
-		static void PatchBaseImage()
+		/// <summary>
+		/// Inline classes marked as [Patch], copying fields and replacing method implementations.
+		/// As you can probably guess from the code, this is wholly incomplete and will certainly break and have to be
+		/// extended in the future.
+		/// </summary>
+		static void Patch()
 		{
-			var baseModule = ModuleDefinition.ReadModule("BaseTowerFall.exe");
+			var baseModule = ModuleDefinition.ReadModule("Original/TowerFall.exe");
 			var modModule = ModuleDefinition.ReadModule("Mod.dll");
-			var modTypes = modModule.Types.Where(t => t.BaseType != null).ToList();
-			var typeMapping = modTypes.ToDictionary(t => t.BaseType.FullName);
 
-			foreach (TypeDefinition type in baseModule.Types.SelectMany(AllNestedTypes))
-				foreach (var method in type.Methods)
-					if (method.HasBody)
-						foreach (var instr in method.Body.Instructions) {
-							var callee = instr.Operand as MethodReference;
-							TypeDefinition modType;
-							if (callee != null && typeMapping.TryGetValue(callee.DeclaringType.FullName, out modType)) {
-								if (instr.OpCode == OpCodes.Newobj) {
-									// replace all object creations in BaseTowerFall with the respective derived class in Mod, if any.
-									instr.Operand = baseModule.Import(modType.Methods.Single((m => m.IsConstructor)));
-								} else if (instr.OpCode == OpCodes.Call) {
-									// make instance method calls to overriden methods virtual
-									var overrider = modType.Methods.SingleOrDefault(m => m.Name == callee.Name);
-									if (overrider != null && overrider.DeclaringType == modType)
-										instr.OpCode = OpCodes.Callvirt;
-								} else if (instr.OpCode == OpCodes.Ldftn) {
-									// Some methods are called as callbacks, which are established by getting the method via ldftn.
-									// In such cases we have to reroute the ldftn to our own class
-									var overrider = modType.Methods.SingleOrDefault(m => m.Name == callee.Name);
-									if (overrider != null && overrider.DeclaringType == modType)
-										instr.Operand = baseModule.Import(overrider);
-								}
-							}
+			// baseModule won't recognize MemberReferences from modModule without Import(), so recursively translate them.
+			// Furthermore, we have to redirect any references to members in [Patch] classes.
+			Func<TypeReference, TypeReference> mapType = null;
+			mapType = (modType) => {
+				if (modType.IsArray) {
+					var type = mapType(modType.GetElementType());
+					return new ArrayType(type);
+				}
+				if (modType.Scope.Name == "Mod.dll")
+					modType = modType.Resolve().BaseType;
+				return baseModule.Import(modType);
+			};
+			Action<MethodReference, MethodReference> mapParams = (modMethod, method) => {
+				foreach (var param in modMethod.Parameters)
+					method.Parameters.Add(new ParameterDefinition(mapType(param.ParameterType)));
+			};
+			Func<MethodReference, MethodReference> mapMethod = (modMethod) => {
+				var method = new MethodReference(modMethod.Name, mapType(modMethod.ReturnType), mapType(modMethod.DeclaringType));
+				method.HasThis = modMethod.HasThis;
+				mapParams(modMethod, method);
+				return method;
+			};
+			Func<MethodDefinition, string, MethodDefinition> cloneMethod = (modMethod, prefix) => {
+				var method = new MethodDefinition(prefix + modMethod.Name, modMethod.Attributes, mapType(modMethod.ReturnType));
+				mapParams(modMethod, method);
+				return method;
+			};
+
+			foreach (TypeDefinition modType in modModule.Types.SelectMany(AllNestedTypes))
+				if (modType.CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute")) {
+					var type = baseModule.Types.Single(t => t.FullName == modType.BaseType.FullName);
+
+					// copy over fields including their custom attributes
+					foreach (var field in modType.Fields)
+						if (field.DeclaringType == modType) {
+							var newField = new FieldDefinition(field.Name, field.Attributes, mapType(field.FieldType));
+							foreach (var attribute in field.CustomAttributes)
+								newField.CustomAttributes.Add(new CustomAttribute(mapMethod(attribute.Constructor), attribute.GetBlob()));
+							type.Fields.Add(newField);
 						}
+
+					// copy over or replace methods
+					foreach (var method in modType.Methods)
+						if (method.DeclaringType == modType && !method.IsConstructor) {
+							var original = type.Methods.SingleOrDefault(m => m.Name == method.Name);
+							MethodDefinition savedMethod = null;
+							if (original == null)
+								type.Methods.Add(original = cloneMethod(method, ""));
+							else {
+								savedMethod = cloneMethod(method, "$original_");
+								savedMethod.Body = original.Body;
+								type.Methods.Add(savedMethod);
+							}
+							original.Body = method.Body;
+
+							// redirect any references in the body
+							foreach (var instr in method.Body.Instructions) {
+								if (instr.Operand is MethodReference) {
+									var callee = mapMethod((MethodReference)instr.Operand);
+									if (callee.FullName == original.FullName)
+										// replace base calls with ones to $original
+										instr.Operand = savedMethod;
+									else
+										instr.Operand = callee;
+								}
+								else if (instr.Operand is FieldReference) {
+									var field = (FieldReference)instr.Operand;
+									instr.Operand = new FieldReference(field.Name, mapType(field.FieldType), mapType(field.DeclaringType));
+								} else if (instr.Operand is TypeReference)
+									instr.Operand = mapType((TypeReference)instr.Operand);
+							}
+							foreach (var var in method.Body.Variables)
+								var.VariableType = mapType(var.VariableType);
+						}
+				}
+
 			baseModule.Write("TowerFall.exe");
 		}
 
+		/// <summary>
+		/// Insert new sprites into Atlas.
+		/// </summary>
 		static void PatchResources()
 		{
 			foreach (var atlasPath in Directory.EnumerateDirectories(Path.Combine("Content", "Atlas"))) {
@@ -106,13 +173,13 @@ namespace Patcher
 		public static void Main (string[] args)
 		{
 			if (args.Length != 1) {
-				Console.WriteLine("Usage: Patcher.exe makeBaseImage | patchBaseImage");
+				Console.WriteLine("Usage: Patcher.exe makeBaseImage | patch");
 				return;
 			}
 			if (args[0] == "makeBaseImage") {
 				MakeBaseImage();
 			} else {
-				PatchBaseImage();
+				Patch();
 				PatchResources();
 			}
 		}

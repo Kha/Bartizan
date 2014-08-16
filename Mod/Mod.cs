@@ -1,9 +1,11 @@
 ﻿using System;
 using TowerFall;
 using Microsoft.Xna.Framework;
+using Patcher;
 
 namespace Mod
 {
+	[Patch]
 	public class MyMatchVariants : MatchVariants
 	{
 		[Header("MODS")]
@@ -19,6 +21,7 @@ namespace Mod
 		}
 	}
 
+	[Patch]
 	public class MyPlayer : Player
 	{
 		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatState hatState, bool frozen = true) : base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen) {}
