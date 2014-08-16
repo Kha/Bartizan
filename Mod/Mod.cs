@@ -3,6 +3,7 @@ using TowerFall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Patcher;
+using Monocle;
 
 namespace Mod
 {
@@ -12,6 +13,7 @@ namespace Mod
 		[Header("MODS")]
 		public Variant NoHeadBounce;
 		public Variant NoLedgeGrab;
+		public Variant AwfullySlowArrows;
 		public Variant InfiniteArrows;
 		public Variant NoDodgeCooldowns;
 
@@ -61,6 +63,24 @@ namespace Mod
 		{
 			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce)
 				base.HurtBouncedOn(bouncerIndex);
+		}
+	}
+
+	[Patch]
+	public abstract class MyArrow : Arrow
+	{
+		const float AwfullySlowArrowMult = 0.2f;
+
+		public override void ArrowUpdate()
+		{
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullySlowArrows) {
+				// Engine.TimeMult *= AwfullySlowArrowMult;
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * AwfullySlowArrowMult, null);
+				base.ArrowUpdate();
+				// Engine.TimeMult /= AwfullySlowArrowMult;
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / AwfullySlowArrowMult, null);
+			} else
+				base.ArrowUpdate();
 		}
 	}
 

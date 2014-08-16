@@ -59,6 +59,9 @@
     <None Include="Content\Atlas\menuAtlas\variants\noDodgeCooldowns.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\Atlas\menuAtlas\variants\awfullySlowArrows.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Patcher\Patcher.csproj">
