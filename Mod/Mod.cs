@@ -1,6 +1,7 @@
 ﻿using System;
 using TowerFall;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Patcher;
 
 namespace Mod
@@ -60,6 +61,24 @@ namespace Mod
 		{
 			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce)
 				base.HurtBouncedOn(bouncerIndex);
+		}
+	}
+
+	[Patch]
+	public class MyKeyboardInput : KeyboardInput
+	{
+		public new static void LoadConfigs()
+		{
+			var p2Config = new KeyboardConfig {
+				Dodge = new[]{ Keys.RightShift },
+				Down = new[]{ Keys.S },
+				Jump = new[]{ Keys.J },
+				Left = new[]{ Keys.A },
+				Right = new[]{ Keys.D },
+				Shoot = new[]{ Keys.K },
+				Up = new[]{ Keys.W }
+			};
+			Configs = new[]{ new KeyboardConfig(), p2Config };
 		}
 	}
 }
