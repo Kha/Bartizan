@@ -85,7 +85,7 @@ namespace Patcher
 
 			foreach (TypeDefinition modType in modModule.Types.SelectMany(AllNestedTypes))
 				if (modType.CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute")) {
-					var type = baseModule.Types.Single(t => t.FullName == modType.BaseType.FullName);
+					var type = AllNestedTypes(baseModule).Single(t => t.FullName == modType.BaseType.FullName);
 
 					// copy over fields including their custom attributes
 					foreach (var field in modType.Fields)
