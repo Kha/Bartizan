@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TowerFall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -14,13 +15,18 @@ namespace Mod
 		public Variant NoHeadBounce;
 		public Variant NoLedgeGrab;
 		public Variant AwfullySlowArrows;
+		public Variant AwfullyFastArrows;
 		public Variant InfiniteArrows;
 		public Variant NoDodgeCooldowns;
+		[PerPlayer]
+		public Variant GottaGoFast;
 
 		public MyMatchVariants()
 		{
 			this.CreateLinks(NoHeadBounce, NoTimeLimit);
 			this.CreateLinks(NoDodgeCooldowns, ShowDodgeCooldown);
+			this.CreateLinks(AwfullyFastArrows, AwfullySlowArrows);
+			this.CreateLinks(SpeedBoots, GottaGoFast);
 		}
 	}
 
@@ -68,6 +74,34 @@ namespace Mod
 
 		}
 
+		public override float MaxRunSpeed
+		{
+			get
+			{
+				float res = base.MaxRunSpeed;
+				if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
+					return res * 1.4f;
+				}
+				return res;
+			}
+		}
+
+		public override int NormalUpdate()
+		{
+			// SpeedBoots add little dust clouds below our feet... we want those too.
+			bool hasSpeedBoots = Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex];
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * 2f, null);
+				Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = true;
+			}
+			int res = base.NormalUpdate();
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / 2f, null);
+				Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = hasSpeedBoots;
+			}
+			return res;
+		}
+
 		public override void ShootArrow()
 		{
 			ArrowTypes[] at = new ArrowTypes[1];
@@ -100,6 +134,15 @@ namespace Mod
 	public abstract class MyArrow : Arrow
 	{
 		const float AwfullySlowArrowMult = 0.2f;
+		const float AwfullyFastArrowMult = 3.0f;
+
+		public MyArrow() : base()
+		{
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
+				this.NormalHitbox = new WrapHitbox(6f, 3f, -1f, -1f);
+				this.otherArrowHitbox = new WrapHitbox(12f, 4f, -2f, -2f);
+			}
+		}
 
 		public override void ArrowUpdate()
 		{
@@ -109,6 +152,11 @@ namespace Mod
 				base.ArrowUpdate();
 				// Engine.TimeMult /= AwfullySlowArrowMult;
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / AwfullySlowArrowMult, null);
+			}
+			else if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * AwfullyFastArrowMult, null);
+				base.ArrowUpdate();
+				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / AwfullyFastArrowMult, null);
 			} else
 				base.ArrowUpdate();
 		}
@@ -131,4 +179,47 @@ namespace Mod
 			Configs = new[]{ new KeyboardConfig(), p2Config };
 		}
 	}
+
+
+	public class MyRollcallElement : RollcallElement
+	{
+		public MyRollcallElement(int playerIndex) : base(playerIndex) { }
+
+		public override int MaxPlayers
+		{
+			get
+			{
+				return (MainMenu.RollcallMode == MainMenu.RollcallModes.Trials) ? 1 : 4;
+			}
+		}
+	}
+
+	[Patch]
+	public class MyQuestRoundLogic : QuestRoundLogic
+	{
+		public MyQuestRoundLogic(Session session) : base(session) { }
+
+        public override void OnLevelLoadFinish()
+        {
+            base.OnLevelLoadFinish();
+
+            base.Players = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if (TFGame.Players[i])
+                {
+                    base.Players++;
+                    if (base.Players <= 2)
+                    {
+                        // the first two players are already taken care of by base.
+                        continue;
+                    }
+                    // This patch doesn't work with the injector because it doesn't yet support generics
+                    //base.Session.CurrentLevel.Add<QuestPlayerHUD>(this.PlayerHUDs[i] = new QuestPlayerHUD(this, (base.Players % 2 == 0) ? Facing.Left : Facing.Right, i));
+                    this.SpawnPlayer(i, false);
+                }
+            }
+        }
+    }
+
 }
