@@ -395,9 +395,11 @@ namespace Mod
 			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
 			List<Vector2> xMLPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
 			xMLPositions.Shuffle(new Random());
-			Player entity = new Player(playerIndex, xMLPositions[0], Allegiance.Neutral, Allegiance.Neutral,
-				                this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex), frozen: false);
-			this.Session.CurrentLevel.Add(entity);
+			player = new Player(playerIndex, xMLPositions[0], Allegiance.Neutral, Allegiance.Neutral,
+				this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex), frozen: false);
+			this.Session.CurrentLevel.Add(player);
+			Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
+
 
 			if (killerIndex == playerIndex || killerIndex == -1) {
 				killCountHUDs[playerIndex].Decrease();
