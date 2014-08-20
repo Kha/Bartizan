@@ -11,7 +11,7 @@ namespace Patcher
 {
 	public class PatchAttribute : Attribute {}
 
-	class Patcher
+	public class Patcher
 	{
 		static IEnumerable<TypeDefinition> AllNestedTypes(TypeDefinition type)
 		{
@@ -67,7 +67,7 @@ namespace Patcher
 		/// As you can probably guess from the code, this is wholly incomplete and will certainly break and have to be
 		/// extended in the future.
 		/// </summary>
-		static void Patch()
+		public static void Patch()
 		{
 			var baseModule = ModuleDefinition.ReadModule("Original/TowerFall.exe");
 			var modModule = ModuleDefinition.ReadModule("Mod.dll");
@@ -154,18 +154,15 @@ namespace Patcher
 		/// <summary>
 		/// Insert new sprites into Atlas.
 		/// </summary>
-		static void PatchResources()
+		public static void PatchResources()
 		{
 			foreach (var atlasPath in Directory.EnumerateDirectories(Path.Combine("Content", "Atlas"))) {
-				File.Copy(Path.Combine("Original", atlasPath + ".png"), atlasPath + ".png", overwrite: true);
-				File.Copy(Path.Combine("Original", atlasPath + ".xml"), atlasPath + ".xml", overwrite: true);
-
-				var xml = XElement.Load(atlasPath + ".xml");
+				var xml = XElement.Load(Path.Combine("Original", atlasPath + ".xml"));
 
 				string[] files = Directory.GetFiles(atlasPath, "*.png", SearchOption.AllDirectories);
 				int x = 700;
 
-				using (var baseImage = Bitmap.FromFile(atlasPath + ".png")) {
+				using (var baseImage = Bitmap.FromFile(Path.Combine("Original", atlasPath + ".png"))) {
 					using (var g = Graphics.FromImage(baseImage))
 						foreach (string file in files)
 							using (var image = Bitmap.FromFile(file)) {
