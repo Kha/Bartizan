@@ -34,7 +34,10 @@ namespace Mod
 	[Patch]
 	public class MyXGamepadData : MInput.XGamepadData
 	{
-		public MyXGamepadData(PlayerIndex playerIndex) : base(playerIndex) {}
+		public MyXGamepadData(PlayerIndex playerIndex)
+			: base(playerIndex)
+		{
+		}
 
 		public bool BackPressed {
 			get { return this.CurrentState.Buttons.Back == ButtonState.Pressed && this.PreviousState.Buttons.Back == ButtonState.Released; }
@@ -57,7 +60,10 @@ namespace Mod
 	[Patch]
 	public class MyPlayer : Player
 	{
-		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatState hatState, bool frozen = true) : base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen) {}
+		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatState hatState, bool frozen = true)
+			: base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen)
+		{
+		}
 
 		public override bool CanGrabLedge(int a, int b)
 		{
@@ -75,10 +81,8 @@ namespace Mod
 
 		}
 
-		public override float MaxRunSpeed
-		{
-			get
-			{
+		public override float MaxRunSpeed {
+			get {
 				float res = base.MaxRunSpeed;
 				if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
 					return res * 1.4f;
@@ -137,7 +141,8 @@ namespace Mod
 		const float AwfullySlowArrowMult = 0.2f;
 		const float AwfullyFastArrowMult = 3.0f;
 
-		public MyArrow() : base()
+		public MyArrow()
+			: base()
 		{
 			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
 				this.NormalHitbox = new WrapHitbox(6f, 3f, -1f, -1f);
@@ -153,8 +158,7 @@ namespace Mod
 				base.ArrowUpdate();
 				// Engine.TimeMult /= AwfullySlowArrowMult;
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / AwfullySlowArrowMult, null);
-			}
-			else if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
+			} else if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * AwfullyFastArrowMult, null);
 				base.ArrowUpdate();
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / AwfullyFastArrowMult, null);
@@ -184,12 +188,13 @@ namespace Mod
 
 	public class MyRollcallElement : RollcallElement
 	{
-		public MyRollcallElement(int playerIndex) : base(playerIndex) { }
-
-		public override int MaxPlayers
+		public MyRollcallElement(int playerIndex)
+			: base(playerIndex)
 		{
-			get
-			{
+		}
+
+		public override int MaxPlayers {
+			get {
 				return (MainMenu.RollcallMode == MainMenu.RollcallModes.Trials) ? 1 : 4;
 			}
 		}
@@ -198,30 +203,30 @@ namespace Mod
 	[Patch]
 	public class MyQuestRoundLogic : QuestRoundLogic
 	{
-		public MyQuestRoundLogic(Session session) : base(session) { }
+		public MyQuestRoundLogic(Session session)
+			: base(session)
+		{
+		}
 
-        public override void OnLevelLoadFinish()
-        {
-            base.OnLevelLoadFinish();
+		public override void OnLevelLoadFinish()
+		{
+			base.OnLevelLoadFinish();
 
-            base.Players = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if (TFGame.Players[i])
-                {
-                    base.Players++;
-                    if (base.Players <= 2)
-                    {
-                        // the first two players are already taken care of by base.
-                        continue;
-                    }
-                    // This patch doesn't work with the injector because it doesn't yet support generics
-                    //base.Session.CurrentLevel.Add<QuestPlayerHUD>(this.PlayerHUDs[i] = new QuestPlayerHUD(this, (base.Players % 2 == 0) ? Facing.Left : Facing.Right, i));
-                    this.SpawnPlayer(i, false);
-                }
-            }
-        }
-    }
+			base.Players = 0;
+			for (int i = 0; i < 4; i++) {
+				if (TFGame.Players[i]) {
+					base.Players++;
+					if (base.Players <= 2) {
+						// the first two players are already taken care of by base.
+						continue;
+					}
+					// This patch doesn't work with the injector because it doesn't yet support generics
+					//base.Session.CurrentLevel.Add<QuestPlayerHUD>(this.PlayerHUDs[i] = new QuestPlayerHUD(this, (base.Players % 2 == 0) ? Facing.Left : Facing.Right, i));
+					this.SpawnPlayer(i, false);
+				}
+			}
+		}
+	}
 
 	[Patch]
 	public class MyRoundLogic : RoundLogic
