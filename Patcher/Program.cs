@@ -32,7 +32,19 @@ namespace Patcher
 		static void MakeBaseImage()
 		{
 			var module = ModuleDefinition.ReadModule("Original/TowerFall.exe");
-			foreach (var type in module.GetTypes()) {
+			foreach (var type in AllNestedTypes(module)) {
+				if (!type.FullName.StartsWith("TowerFall.") && !type.FullName.StartsWith("Monocle")) {
+					continue;
+				}
+				if (type.Name.StartsWith("<>")) {
+					continue;
+				}
+				if (type.IsNested)
+					type.IsNestedPublic = true;
+				if (type.IsValueType) {
+					continue;
+				}
+
 				type.IsSealed = false;
 				foreach (var field in type.Fields)
 					field.IsPublic = true;
@@ -43,6 +55,11 @@ namespace Patcher
 				}
 			}
 			module.Write("BaseTowerFall.exe");
+		}
+
+		static bool PatchType(TypeReference type)
+		{
+			return type.Resolve().CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute");
 		}
 
 		/// <summary>
@@ -63,7 +80,7 @@ namespace Patcher
 					var type = mapType(modType.GetElementType());
 					return new ArrayType(type);
 				}
-				if (modType.Scope.Name == "Mod.dll")
+				if (PatchType(modType))
 					modType = modType.Resolve().BaseType;
 				return baseModule.Import(modType);
 			};
@@ -84,7 +101,7 @@ namespace Patcher
 			};
 
 			foreach (TypeDefinition modType in modModule.Types.SelectMany(AllNestedTypes))
-				if (modType.CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute")) {
+				if (PatchType(modType)) {
 					var type = AllNestedTypes(baseModule).Single(t => t.FullName == modType.BaseType.FullName);
 
 					// copy over fields including their custom attributes
