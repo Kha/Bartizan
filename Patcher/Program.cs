@@ -13,6 +13,13 @@ namespace Patcher
 
 	public class Patcher
 	{
+		/// <summary>
+		/// Marker method for calling the base implementation of a patched method
+		/// </summary>
+		public static void CallRealBase()
+		{
+		}
+
 		static IEnumerable<TypeDefinition> AllNestedTypes(TypeDefinition type)
 		{
 			yield return type;
@@ -56,12 +63,7 @@ namespace Patcher
 			}
 			module.Write("BaseTowerFall.exe");
 		}
-
-		static bool PatchType(TypeReference type)
-		{
-			return type.Resolve().CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute");
-		}
-
+			
 		/// <summary>
 		/// Inline classes marked as [Patch], copying fields and replacing method implementations.
 		/// As you can probably guess from the code, this is wholly incomplete and will certainly break and have to be
@@ -72,15 +74,25 @@ namespace Patcher
 			var baseModule = ModuleDefinition.ReadModule("Original/TowerFall.exe");
 			var modModule = ModuleDefinition.ReadModule("Mod.dll");
 
+			Func<TypeReference, bool> patchType = (type) => {
+				if (type.Scope == modModule) {
+					return type.Resolve().CustomAttributes.Any(attr => attr.AttributeType.FullName == "Patcher.PatchAttribute");
+				}
+				return false;
+			};
+
 			// baseModule won't recognize MemberReferences from modModule without Import(), so recursively translate them.
 			// Furthermore, we have to redirect any references to members in [Patch] classes.
 			Func<TypeReference, TypeReference> mapType = null;
 			mapType = (modType) => {
+				if (modType.IsGenericParameter) {
+					return modType;
+				}
 				if (modType.IsArray) {
 					var type = mapType(modType.GetElementType());
 					return new ArrayType(type);
 				}
-				if (PatchType(modType))
+				if (patchType(modType))
 					modType = modType.Resolve().BaseType;
 				return baseModule.Import(modType);
 			};
@@ -92,16 +104,30 @@ namespace Patcher
 				var method = new MethodReference(modMethod.Name, mapType(modMethod.ReturnType), mapType(modMethod.DeclaringType));
 				method.HasThis = modMethod.HasThis;
 				mapParams(modMethod, method);
+
+				var modInst = modMethod as GenericInstanceMethod;
+				if (modInst != null) {
+					method.CallingConvention = MethodCallingConvention.Generic;
+					var inst = new GenericInstanceMethod(method);
+					foreach (var arg in modInst.GenericArguments) {
+						inst.GenericArguments.Add(mapType(arg));
+					}
+					method = inst;
+				}
 				return method;
 			};
 			Func<MethodDefinition, string, MethodDefinition> cloneMethod = (modMethod, prefix) => {
 				var method = new MethodDefinition(prefix + modMethod.Name, modMethod.Attributes, mapType(modMethod.ReturnType));
 				mapParams(modMethod, method);
+				foreach (var modParam in modMethod.GenericParameters) {
+					var param = new GenericParameter(modParam.Position, GenericParameterType.Method, modModule);
+					method.GenericParameters.Add(param);
+				}
 				return method;
 			};
 
 			foreach (TypeDefinition modType in modModule.Types.SelectMany(AllNestedTypes))
-				if (PatchType(modType)) {
+				if (patchType(modType)) {
 					var type = AllNestedTypes(baseModule).Single(t => t.FullName == modType.BaseType.FullName);
 
 					// copy over fields including their custom attributes
@@ -128,14 +154,23 @@ namespace Patcher
 							original.Body = method.Body;
 
 							// redirect any references in the body
+							var proc = method.Body.GetILProcessor();
+							var amendments = new List<Action>();
 							foreach (var instr in method.Body.Instructions) {
 								if (instr.Operand is MethodReference) {
-									var callee = mapMethod((MethodReference)instr.Operand);
-									if (callee.FullName == original.FullName)
-										// replace base calls with ones to $original
-										instr.Operand = savedMethod;
-									else
-										instr.Operand = callee;
+									var callee = (MethodReference)instr.Operand;
+									if (callee.Name == "CallRealBase") {
+										instr.OpCode = OpCodes.Call;
+										instr.Operand = type.BaseType.Resolve().Methods.Single(m => m.Name == method.Name);
+										amendments.Add(() => proc.InsertBefore(instr, proc.Create(OpCodes.Ldarg_0)));
+									} else {
+										callee = mapMethod((MethodReference)instr.Operand);
+										if (callee.FullName == original.FullName)
+											// replace base calls with ones to $original
+											instr.Operand = savedMethod;
+										else
+											instr.Operand = callee;
+									}
 								}
 								else if (instr.Operand is FieldReference) {
 									var field = (FieldReference)instr.Operand;
@@ -145,6 +180,10 @@ namespace Patcher
 							}
 							foreach (var var in method.Body.Variables)
 								var.VariableType = mapType(var.VariableType);
+							foreach (var amendment in amendments) {
+								amendment();
+							}
+							method.Body = proc.Body;
 						}
 				}
 

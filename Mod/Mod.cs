@@ -238,16 +238,25 @@ namespace Mod
 
 		public new static RoundLogic GetRoundLogic(Session session)
 		{
-			if (session.MatchSettings.Mode == RespawnRoundLogic.Mode)
-				return new RespawnRoundLogic(session);
-			else
-				return RoundLogic.GetRoundLogic(session);
+			switch (session.MatchSettings.Mode) {
+				case RespawnRoundLogic.Mode:
+					return new RespawnRoundLogic(session);
+				case MobRoundLogic.Mode:
+					return new MobRoundLogic(session);
+				default:
+					return RoundLogic.GetRoundLogic(session);
+			}
 		}
 	}
 
 	[Patch]
 	public class MyVersusModeButton : VersusModeButton
 	{
+		static List<Modes> VersusModes = new List<Modes> {
+			Modes.LastManStanding, Modes.HeadHunters, Modes.TeamDeathmatch,
+			RespawnRoundLogic.Mode,	MobRoundLogic.Mode
+		};
+
 		public MyVersusModeButton(Vector2 position, Vector2 tweenFrom)
 			: base(position, tweenFrom)
 		{
@@ -255,50 +264,58 @@ namespace Mod
 
 		public new static string GetModeName(Modes mode)
 		{
-			if (mode == RespawnRoundLogic.Mode)
-				return "RESPAWN";
-			else
-				return VersusModeButton.GetModeName(mode);
+			switch (mode) {
+				case RespawnRoundLogic.Mode:
+					return "RESPAWN";
+				case MobRoundLogic.Mode:
+					return "CRAWL";
+				default:
+					return VersusModeButton.GetModeName(mode);
+			}
 		}
 
 		public new static Subtexture GetModeIcon(Modes mode)
 		{
-			if (mode == RespawnRoundLogic.Mode)
-				return TFGame.MenuAtlas["gameModes/headhunters"];
-			else
-				return VersusModeButton.GetModeIcon(mode);
+			switch (mode) {
+				case RespawnRoundLogic.Mode:
+				case MobRoundLogic.Mode:
+					return TFGame.MenuAtlas["gameModes/headhunters"];
+				default:
+					return VersusModeButton.GetModeIcon(mode);
+			}
 		}
 
+		// completely re-write to make it enum-independent
 		public override void Update()
 		{
+			// skip original implementation
+			Patcher.Patcher.CallRealBase();
+
 			Modes mode = MainMenu.VersusMatchSettings.Mode;
 			if (this.Selected) {
-				if (mode >= Modes.TeamDeathmatch && MenuInput.Right) {
-					if (mode == RespawnRoundLogic.Mode) {
-						return;
-					}
-					MainMenu.VersusMatchSettings.Mode = RespawnRoundLogic.Mode;
+				int idx = VersusModes.IndexOf(mode);
+				if (idx < VersusModes.Count-1 && MenuInput.Right) {
+					MainMenu.VersusMatchSettings.Mode = VersusModes[idx + 1];
 					Sounds.ui_move2.Play(160f, 1f);
 					this.iconWiggler.Start();
 					base.OnConfirm();
 					this.UpdateSides();
-					return;
-				} else if (mode == RespawnRoundLogic.Mode && MenuInput.Left) {
-					MainMenu.VersusMatchSettings.Mode = Modes.TeamDeathmatch;
+				} else if (idx > 0 && MenuInput.Left) {
+					MainMenu.VersusMatchSettings.Mode = VersusModes[idx - 1];
 					Sounds.ui_move2.Play(160f, 1f);
 					this.iconWiggler.Start();
 					base.OnConfirm();
 					this.UpdateSides();
-					return;
 				}
 			}
-			base.Update();
+			// call BorderButton.Update()
+
 		}
 
 		public override void UpdateSides()
 		{
 			base.UpdateSides();
-			this.DrawRight = (MainMenu.VersusMatchSettings.Mode < RespawnRoundLogic.Mode);
+			this.DrawRight = (MainMenu.VersusMatchSettings.Mode < MobRoundLogic.Mode);
 		}
 	}
 
@@ -312,11 +329,13 @@ namespace Mod
 
 		public override int GoalScore {
 			get {
-				if (this.Mode == RespawnRoundLogic.Mode) {
-					int goals = this.PlayerGoals(5, 8, 10);
-					return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
-				} else {
-					return base.GoalScore;
+				switch (this.Mode) {
+					case RespawnRoundLogic.Mode:
+					case MobRoundLogic.Mode:
+						int goals = this.PlayerGoals(5, 8, 10);
+						return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
+					default:
+						return base.GoalScore;
 				}
 			}
 		}
@@ -332,20 +351,24 @@ namespace Mod
 
 		public override void Update()
 		{
-			if (MainMenu.VersusMatchSettings.Mode == RespawnRoundLogic.Mode) {
-				var coinSprite = this.coinSprite;
-				this.coinSprite = this.skullSprite;
-				base.Update();
-				this.coinSprite = coinSprite;
-			} else {
-				base.Update();
+			switch (MainMenu.VersusMatchSettings.Mode) {
+				case RespawnRoundLogic.Mode:
+				case MobRoundLogic.Mode:
+					var coinSprite = this.coinSprite;
+					this.coinSprite = this.skullSprite;
+					base.Update();
+					this.coinSprite = coinSprite;
+					break;
+				default:
+					base.Update();
+					break;
 			}
 		}
 	}
 
 	public class RespawnRoundLogic : RoundLogic
 	{
-		public static readonly Modes Mode = (Modes)42;
+		public const Modes Mode = (Modes)42;
 
 		private KillCountHUD[] killCountHUDs = new KillCountHUD[4];
 		private bool wasFinalKill;
@@ -379,10 +402,8 @@ namespace Mod
 		public override void OnUpdate()
 		{
 			base.OnUpdate();
-			if (base.RoundStarted && base.Session.CurrentLevel.Ending && base.Session.CurrentLevel.CanEnd)
-			{
-				if (this.endDelay)
-				{
+			if (base.RoundStarted && base.Session.CurrentLevel.Ending && base.Session.CurrentLevel.CanEnd) {
+				if (this.endDelay) {
 					this.endDelay.Update();
 					return;
 				}
@@ -417,10 +438,10 @@ namespace Mod
 				this.endDelay.Set(90);
 			}
 			if (!this.wasFinalKill && winner != -1) {
-					base.Session.CurrentLevel.Ending = true;
-					this.wasFinalKill = true;
-					base.FinalKill(corpse, winner);
-				}
+				base.Session.CurrentLevel.Ending = true;
+				this.wasFinalKill = true;
+				base.FinalKill(corpse, winner);
+			}
 		}
 	}
 
@@ -468,6 +489,38 @@ namespace Mod
 				sprite.DrawOutline(1);
 			}
 			base.Render();
+		}
+	}
+
+	[Patch]
+	public class MyPlayerGhost : PlayerGhost
+	{
+		// when in doubt, global variables!
+		public static PlayerGhost[] ActiveGhosts = new PlayerGhost[4];
+
+		public MyPlayerGhost(PlayerCorpse corpse) : base(corpse)
+		{
+			ActiveGhosts[corpse.PlayerIndex] = this;
+		}
+	}
+
+	public class MobRoundLogic : RespawnRoundLogic
+	{
+		public new const Modes Mode = (Modes)43;
+
+		public MobRoundLogic(Session session)
+			: base(session)
+		{
+		}
+
+		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
+		{
+			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
+			this.Session.CurrentLevel.Add(new PlayerGhost(corpse));
+
+			if (killerIndex != playerIndex && killerIndex != -1) {
+				this.Session.CurrentLevel.Remove(MyPlayerGhost.ActiveGhosts[killerIndex]);
+			}
 		}
 	}
 }
