@@ -11,6 +11,27 @@ namespace Patcher
 {
 	public class PatchAttribute : Attribute {}
 
+	static class CecilExtensions
+	{
+		public static IEnumerable<TypeDefinition> AllNestedTypes(this TypeDefinition type)
+		{
+			yield return type;
+			foreach (TypeDefinition nested in type.NestedTypes)
+				foreach (TypeDefinition moarNested in AllNestedTypes(nested))
+					yield return moarNested;
+		}
+
+		public static IEnumerable<TypeDefinition> AllNestedTypes(this ModuleDefinition module)
+		{
+			return module.Types.SelectMany(AllNestedTypes);
+		}
+
+		public static string Signature(this MethodReference method)
+		{
+			return string.Format("{0}({1})", method.Name, string.Join(", ", method.Parameters.Select(p => p.ParameterType)));
+		}
+	}
+
 	public class Patcher
 	{
 		/// <summary>
@@ -20,18 +41,6 @@ namespace Patcher
 		{
 		}
 
-		static IEnumerable<TypeDefinition> AllNestedTypes(TypeDefinition type)
-		{
-			yield return type;
-			foreach (TypeDefinition nested in type.NestedTypes)
-				foreach (TypeDefinition moarNested in AllNestedTypes(nested))
-					yield return moarNested;
-		}
-
-		static IEnumerable<TypeDefinition> AllNestedTypes(ModuleDefinition module)
-		{
-			return module.Types.SelectMany(AllNestedTypes);
-		}
 
 		/// <summary>
 		/// Unseal, publicize, virtualize.
@@ -39,7 +48,7 @@ namespace Patcher
 		static void MakeBaseImage()
 		{
 			var module = ModuleDefinition.ReadModule("Original/TowerFall.exe");
-			foreach (var type in AllNestedTypes(module)) {
+			foreach (var type in module.AllNestedTypes()) {
 				if (!type.FullName.StartsWith("TowerFall.") && !type.FullName.StartsWith("Monocle")) {
 					continue;
 				}
@@ -63,7 +72,7 @@ namespace Patcher
 			}
 			module.Write("BaseTowerFall.exe");
 		}
-			
+
 		/// <summary>
 		/// Inline classes marked as [Patch], copying fields and replacing method implementations.
 		/// As you can probably guess from the code, this is wholly incomplete and will certainly break and have to be
@@ -126,9 +135,9 @@ namespace Patcher
 				return method;
 			};
 
-			foreach (TypeDefinition modType in modModule.Types.SelectMany(AllNestedTypes))
+			foreach (TypeDefinition modType in modModule.Types.SelectMany(CecilExtensions.AllNestedTypes))
 				if (patchType(modType)) {
-					var type = AllNestedTypes(baseModule).Single(t => t.FullName == modType.BaseType.FullName);
+					var type = baseModule.AllNestedTypes().Single(t => t.FullName == modType.BaseType.FullName);
 
 					// copy over fields including their custom attributes
 					foreach (var field in modType.Fields)
@@ -141,8 +150,8 @@ namespace Patcher
 
 					// copy over or replace methods
 					foreach (var method in modType.Methods)
-						if (method.DeclaringType == modType && !method.IsConstructor) {
-							var original = type.Methods.SingleOrDefault(m => m.Name == method.Name);
+						if (method.DeclaringType == modType) {
+							var original = type.Methods.SingleOrDefault(m => m.Signature() == method.Signature());
 							MethodDefinition savedMethod = null;
 							if (original == null)
 								type.Methods.Add(original = cloneMethod(method, ""));
