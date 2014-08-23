@@ -9,22 +9,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wizard", "Wizard\Wizard.csp
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x86 = Debug|x86
-		Release|x86 = Release|x86
+		DebugLinux|x86 = DebugLinux|x86
+		DebugWindows|x86 = DebugWindows|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.Debug|x86.ActiveCfg = Debug|x86
-		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.Debug|x86.Build.0 = Debug|x86
-		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.Release|x86.ActiveCfg = Release|x86
-		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.Release|x86.Build.0 = Release|x86
-		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Debug|x86.Build.0 = Debug|Any CPU
-		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Release|x86.ActiveCfg = Release|Any CPU
-		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.Release|x86.Build.0 = Release|Any CPU
-		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Debug|x86.ActiveCfg = Debug|x86
-		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Debug|x86.Build.0 = Debug|x86
-		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Release|x86.ActiveCfg = Release|x86
-		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.Release|x86.Build.0 = Release|x86
+		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugLinux|x86.ActiveCfg = Debug|x86
+		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugLinux|x86.Build.0 = Debug|x86
+		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugWindows|x86.ActiveCfg = Debug|x86
+		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugWindows|x86.Build.0 = Debug|x86
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.DebugLinux|x86.ActiveCfg = DebugLinux|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.DebugLinux|x86.Build.0 = DebugLinux|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.DebugWindows|x86.ActiveCfg = DebugWindows|Any CPU
+		{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}.DebugWindows|x86.Build.0 = DebugWindows|Any CPU
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugLinux|x86.ActiveCfg = Debug|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugLinux|x86.Build.0 = Debug|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugWindows|x86.ActiveCfg = Debug|x86
+		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugWindows|x86.Build.0 = Debug|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Patcher\Patcher.csproj
