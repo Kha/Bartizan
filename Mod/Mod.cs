@@ -420,6 +420,7 @@ namespace Mod
 			var player = new Player(playerIndex, new Random().Choose(spawnPositions), Allegiance.Neutral, Allegiance.Neutral,
 				this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex), frozen: false);
 			this.Session.CurrentLevel.Add(player);
+			player.Flash(120, null);
 			Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
 		}
 
