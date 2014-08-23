@@ -141,9 +141,10 @@ namespace Mod
 		const float AwfullySlowArrowMult = 0.2f;
 		const float AwfullyFastArrowMult = 3.0f;
 
-		public MyArrow()
-			: base()
+		public override void Added()
 		{
+			base.Added();
+
 			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).AwfullyFastArrows) {
 				this.NormalHitbox = new WrapHitbox(6f, 3f, -1f, -1f);
 				this.otherArrowHitbox = new WrapHitbox(12f, 4f, -2f, -2f);
@@ -411,16 +412,24 @@ namespace Mod
 			}
 		}
 
-		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
+		protected void RespawnPlayer(int playerIndex)
 		{
-			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
-			List<Vector2> xMLPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
-			xMLPositions.Shuffle(new Random());
-			player = new Player(playerIndex, xMLPositions[0], Allegiance.Neutral, Allegiance.Neutral,
+			List<Vector2> spawnPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
+
+			var player = new Player(playerIndex, new Random().Choose(spawnPositions), Allegiance.Neutral, Allegiance.Neutral,
 				this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex), frozen: false);
 			this.Session.CurrentLevel.Add(player);
 			Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
+		}
 
+		protected virtual void AfterOnPlayerDeath(Player player)
+		{
+			this.RespawnPlayer(player.PlayerIndex);
+		}
+
+		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
+		{
+			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
 
 			if (killerIndex == playerIndex || killerIndex == -1) {
 				killCountHUDs[playerIndex].Decrease();
@@ -442,6 +451,8 @@ namespace Mod
 				this.wasFinalKill = true;
 				base.FinalKill(corpse, winner);
 			}
+
+			this.AfterOnPlayerDeath(player);
 		}
 	}
 
@@ -500,7 +511,13 @@ namespace Mod
 
 		public MyPlayerGhost(PlayerCorpse corpse) : base(corpse)
 		{
-			ActiveGhosts[corpse.PlayerIndex] = this;
+			ActiveGhosts[this.PlayerIndex] = this;
+		}
+
+		public override void Die(int killerIndex, Arrow arrow, Explosion explosion)
+		{
+			base.Die(killerIndex, arrow, explosion);
+			ActiveGhosts[this.PlayerIndex] = null;
 		}
 	}
 
@@ -513,12 +530,26 @@ namespace Mod
 		{
 		}
 
+		protected override void AfterOnPlayerDeath(Player player)
+		{
+		}
+
 		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
 		{
 			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
 			this.Session.CurrentLevel.Add(new PlayerGhost(corpse));
 
-			if (killerIndex != playerIndex && killerIndex != -1) {
+			if (killerIndex == playerIndex || killerIndex == -1) {
+				if (this.Session.CurrentLevel.LivingPlayers == 0) {
+					var otherPlayers = TFGame.Players.Select((playing, idx) => playing && idx != playerIndex ? (int?)idx : null).Where(idx => idx != null).ToList();
+					this.RespawnPlayer(new Random().Choose(otherPlayers).Value);
+				}
+			} else {
+				if (MyPlayerGhost.ActiveGhosts[killerIndex] != null) {
+					this.RespawnPlayer(killerIndex);
+				}
+			}
+			if (killerIndex != -1 && MyPlayerGhost.ActiveGhosts[killerIndex] != null) {
 				this.Session.CurrentLevel.Remove(MyPlayerGhost.ActiveGhosts[killerIndex]);
 			}
 		}
