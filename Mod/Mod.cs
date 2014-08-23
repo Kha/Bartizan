@@ -522,24 +522,31 @@ namespace Mod
 	[Patch]
 	public class MyPlayerGhost : PlayerGhost
 	{
-		// when in doubt, global variables!
-		public static PlayerGhost[] ActiveGhosts = new PlayerGhost[4];
+		PlayerCorpse corpse;
 
 		public MyPlayerGhost(PlayerCorpse corpse) : base(corpse)
 		{
-			ActiveGhosts[this.PlayerIndex] = this;
+			this.corpse = corpse;
 		}
 
 		public override void Die(int killerIndex, Arrow arrow, Explosion explosion)
 		{
 			base.Die(killerIndex, arrow, explosion);
-			ActiveGhosts[this.PlayerIndex] = null;
+			var mobLogic = this.Level.Session.RoundLogic as MobRoundLogic;
+			if (mobLogic != null) {
+				mobLogic.OnPlayerDeath(
+					null, this.corpse, this.PlayerIndex, DeathCause.Arrow, // FIXME
+					this.Position, killerIndex
+				);
+			}
 		}
 	}
 
 	public class MobRoundLogic : RespawnRoundLogic
 	{
 		public new const Modes Mode = (Modes)43;
+
+		PlayerGhost[] activeGhosts = new PlayerGhost[4];
 
 		public MobRoundLogic(Session session)
 			: base(session)
@@ -553,7 +560,7 @@ namespace Mod
 		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
 		{
 			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
-			this.Session.CurrentLevel.Add(new PlayerGhost(corpse));
+			this.Session.CurrentLevel.Add(activeGhosts[playerIndex] = new PlayerGhost(corpse));
 
 			if (killerIndex == playerIndex || killerIndex == -1) {
 				if (this.Session.CurrentLevel.LivingPlayers == 0) {
@@ -561,12 +568,11 @@ namespace Mod
 					this.RespawnPlayer(new Random().Choose(otherPlayers).Value);
 				}
 			} else {
-				if (MyPlayerGhost.ActiveGhosts[killerIndex] != null) {
+				if (activeGhosts[killerIndex] != null) {
 					this.RespawnPlayer(killerIndex);
+					activeGhosts[killerIndex].RemoveSelf();
+					activeGhosts[killerIndex] = null;
 				}
-			}
-			if (killerIndex != -1 && MyPlayerGhost.ActiveGhosts[killerIndex] != null) {
-				this.Session.CurrentLevel.Remove(MyPlayerGhost.ActiveGhosts[killerIndex]);
 			}
 		}
 	}
