@@ -279,8 +279,9 @@ namespace Mod
 		{
 			switch (mode) {
 				case RespawnRoundLogic.Mode:
-				case MobRoundLogic.Mode:
 					return TFGame.MenuAtlas["gameModes/headhunters"];
+				case MobRoundLogic.Mode:
+					return TFGame.MenuAtlas["gameModes/crawl"];
 				default:
 					return VersusModeButton.GetModeIcon(mode);
 			}

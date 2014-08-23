@@ -50,6 +50,7 @@
     <Folder Include="Content\Atlas\" />
     <Folder Include="Content\Atlas\menuAtlas\" />
     <Folder Include="Content\Atlas\menuAtlas\variants\" />
+    <Folder Include="Content\Atlas\menuAtlas\gameModes\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\Atlas\menuAtlas\variants\noHeadBounce.png">
@@ -71,6 +72,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Content\Atlas\menuAtlas\variants\gottaGoFast.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Atlas\menuAtlas\gameModes\crawl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
