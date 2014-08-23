@@ -158,6 +158,7 @@ namespace Patcher
 							else {
 								savedMethod = cloneMethod(method, "$original_");
 								savedMethod.Body = original.Body;
+								savedMethod.IsRuntimeSpecialName = false;
 								type.Methods.Add(savedMethod);
 							}
 							original.Body = method.Body;
