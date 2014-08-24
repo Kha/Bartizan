@@ -351,20 +351,34 @@ namespace Mod
 		{
 		}
 
-		public override void Update()
+		public override void Render()
 		{
-			switch (MainMenu.VersusMatchSettings.Mode) {
-				case RespawnRoundLogic.Mode:
-				case MobRoundLogic.Mode:
-					var coinSprite = this.coinSprite;
-					this.coinSprite = this.skullSprite;
-					base.Update();
-					this.coinSprite = coinSprite;
-					break;
-				default:
-					base.Update();
-					break;
+			var mode = MainMenu.VersusMatchSettings.Mode;
+			if (mode == RespawnRoundLogic.Mode || mode == MobRoundLogic.Mode) {
+				MainMenu.VersusMatchSettings.Mode = Modes.HeadHunters;
+				base.Render();
+				MainMenu.VersusMatchSettings.Mode = mode;
+			} else {
+				base.Render();
 			}
+		}
+	}
+
+	[Patch]
+	public class MyVersusRoundResults : VersusRoundResults
+	{
+		private Modes _oldMode;
+
+		public MyVersusRoundResults(Session session) : base(session) {
+			this._oldMode = session.MatchSettings.Mode;
+			if (this._oldMode == RespawnRoundLogic.Mode || this._oldMode == MobRoundLogic.Mode)
+				session.MatchSettings.Mode = Modes.HeadHunters;
+		}
+
+		public override void TweenOut()
+		{
+			this.session.MatchSettings.Mode = this._oldMode;
+			base.TweenOut();
 		}
 	}
 
