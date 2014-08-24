@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TowerFall;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Patcher;
 using Monocle;
 
@@ -33,32 +32,6 @@ namespace Mod
 			this.CreateLinks(NoDodgeCooldowns, ShowDodgeCooldown);
 			this.CreateLinks(AwfullyFastArrows, AwfullySlowArrows);
 			this.CreateLinks(SpeedBoots, GottaGoFast);
-		}
-	}
-
-	[Patch]
-	public class MyXGamepadData : MInput.XGamepadData
-	{
-		public MyXGamepadData(PlayerIndex playerIndex)
-			: base(playerIndex)
-		{
-		}
-
-		public bool BackPressed {
-			get { return this.CurrentState.Buttons.Back == ButtonState.Pressed && this.PreviousState.Buttons.Back == ButtonState.Released; }
-		}
-	}
-
-	[Patch]
-	public abstract class MyPlayerInput : PlayerInput
-	{
-		public virtual bool SlowButton {
-			get {
-				if ((PlayerInput)this is XGamepadInput)
-					return ((MyXGamepadData)((XGamepadInput)(PlayerInput)this).XGamepad).BackPressed;
-				else
-					return false;
-			}
 		}
 	}
 
@@ -129,12 +102,6 @@ namespace Mod
 				base.HurtBouncedOn(bouncerIndex);
 		}
 
-		public override void Update()
-		{
-			base.Update();
-			if (((MyPlayerInput)TFGame.PlayerInputs[this.PlayerIndex]).SlowButton)
-				Level.OrbLogic.DoTimeOrb(delay: false);
-		}
 	}
 
 	[Patch]
