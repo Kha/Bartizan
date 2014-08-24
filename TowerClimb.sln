@@ -7,12 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wizard", "Wizard\Wizard.csproj", "{3885DF9F-DED0-493C-99D1-32E53287B2B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevMod", "DevMod\DevMod.csproj", "{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugLinux|x86 = DebugLinux|x86
 		DebugWindows|x86 = DebugWindows|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}.DebugLinux|x86.ActiveCfg = DebugLinux|Any CPU
+		{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}.DebugLinux|x86.Build.0 = DebugLinux|Any CPU
+		{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}.DebugWindows|x86.ActiveCfg = DebugWindows|Any CPU
+		{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}.DebugWindows|x86.Build.0 = DebugWindows|Any CPU
 		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugLinux|x86.ActiveCfg = Debug|x86
 		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugLinux|x86.Build.0 = Debug|x86
 		{3885DF9F-DED0-493C-99D1-32E53287B2B7}.DebugWindows|x86.ActiveCfg = Debug|x86
@@ -25,8 +31,5 @@ Global
 		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugLinux|x86.Build.0 = Debug|x86
 		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugWindows|x86.ActiveCfg = Debug|x86
 		{B1DF3728-5F4C-4987-8213-4DCE21255B0F}.DebugWindows|x86.Build.0 = Debug|x86
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Patcher\Patcher.csproj
 	EndGlobalSection
 EndGlobal

@@ -8,22 +8,35 @@
     <RootNamespace>Mod</RootNamespace>
     <AssemblyName>Mod</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugLinux|AnyCPU' " />
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' " />
-  <PropertyGroup>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugLinux|AnyCPU' ">
     <CustomCommands>
       <CustomCommands>
         <Command type="AfterBuild" command="../bin/Patcher.exe patch" workingdir="../bin" />
       </CustomCommands>
     </CustomCommands>
+    <OutputPath>..\bin</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <ConsolePause>false</ConsolePause>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' ">
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="../bin/Patcher.exe patch" workingdir="../bin" />
+      </CustomCommands>
+    </CustomCommands>
+    <OutputPath>..\bin</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <ConsolePause>false</ConsolePause>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -37,8 +50,9 @@
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Mod.cs" />
+    <Compile Include="Variants.cs" />
+    <Compile Include="Other.cs" />
+    <Compile Include="GameModes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

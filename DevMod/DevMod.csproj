@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">DebugLinux</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1491BA74-AF39-409E-A9BD-EB2D128C6DE2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>DevMod</RootNamespace>
+    <AssemblyName>DevMod</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugLinux|AnyCPU' ">
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="../bin/Patcher.exe patch Mod.dll DevMod.dll" workingdir="../bin" />
+      </CustomCommands>
+    </CustomCommands>
+    <OutputPath>..\bin</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <ConsolePause>false</ConsolePause>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' ">
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="../bin/Patcher.exe patch Mod.dll DevMod.dll" workingdir="../bin" />
+      </CustomCommands>
+    </CustomCommands>
+    <OutputPath>..\bin</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <ConsolePause>false</ConsolePause>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="DevMod.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Patcher\Patcher.csproj">
+      <Project>{B1DF3728-5F4C-4987-8213-4DCE21255B0F}</Project>
+      <Name>Patcher</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="TowerFall">
+      <HintPath>..\bin\BaseTowerFall.exe</HintPath>
+    </Reference>
+    <Reference Condition=" '$(Configuration)' == 'DebugLinux' " Include="MonoGame.Framework" />
+    <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework" />
+    <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Game" />
+    <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Graphics" />
+    <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Net" />
+  </ItemGroup>
+</Project>
