@@ -45,18 +45,17 @@ namespace Mod
 
 		public override bool CanGrabLedge(int a, int b)
 		{
-			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).NoLedgeGrab)
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).NoLedgeGrab[this.PlayerIndex])
 				return false;
 			return base.CanGrabLedge(a, b);
 		}
 
 		public override int GetDodgeExitState()
 		{
-			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).NoDodgeCooldowns) {
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).NoDodgeCooldowns[this.PlayerIndex]) {
 				this.DodgeCooldown();
 			}
 			return base.GetDodgeExitState();
-
 		}
 
 		public override float MaxRunSpeed {
@@ -72,22 +71,24 @@ namespace Mod
 		public override int NormalUpdate()
 		{
 			// SpeedBoots add little dust clouds below our feet... we want those too.
+			var gottaGoFast = ((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex];
 			bool hasSpeedBoots = Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex];
-			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
+			if (gottaGoFast) {
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * 2f, null);
 				Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = true;
 			}
 			int res = base.NormalUpdate();
-			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
+			if (gottaGoFast) {
 				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / 2f, null);
-				Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = hasSpeedBoots;
 			}
+			Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = hasSpeedBoots;
+			((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex] = gottaGoFast;
 			return res;
 		}
 
 		public override void ShootArrow()
 		{
-			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).InfiniteArrows) {
+			if (((MyMatchVariants)Level.Session.MatchSettings.Variants).InfiniteArrows[this.PlayerIndex]) {
 				var arrow = this.Arrows.Arrows[0];
 				base.ShootArrow();
 				this.Arrows.AddArrows(arrow);
@@ -98,7 +99,7 @@ namespace Mod
 
 		public override void HurtBouncedOn(int bouncerIndex)
 		{
-			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce)
+			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce[this.PlayerIndex])
 				base.HurtBouncedOn(bouncerIndex);
 		}
 
