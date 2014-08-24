@@ -47,6 +47,8 @@ This may be our most ambitious mod yet, and therefore not quite yet balanced.
 
 ### Awfully Fast Arrows ![](Mod/Content/Atlas/menuAtlas/variants/awfullyFastArrows.png?raw=true)
 
+![](img/awfullyFastArrows.gif?raw=true)
+
 ### Infinite Arrows ![](Mod/Content/Atlas/menuAtlas/variants/infiniteArrows.png?raw=true)
 
 ![](img/infiniteArrows.gif?raw=true)
