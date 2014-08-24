@@ -9,11 +9,6 @@
     <AssemblyName>Mod</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugLinux|AnyCPU' ">
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="AfterBuild" command="../bin/Patcher.exe patch" workingdir="../bin" />
-      </CustomCommands>
-    </CustomCommands>
     <OutputPath>..\bin</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <ConsolePause>false</ConsolePause>
@@ -24,11 +19,6 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' ">
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="AfterBuild" command="../bin/Patcher.exe patch" workingdir="../bin" />
-      </CustomCommands>
-    </CustomCommands>
     <OutputPath>..\bin</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <ConsolePause>false</ConsolePause>
@@ -97,4 +87,7 @@
       <Name>Patcher</Name>
     </ProjectReference>
   </ItemGroup>
+  <Target Name="AfterBuild">
+    <Exec Command="../bin/Patcher.exe patch Mod.dll" WorkingDirectory="../bin" />
+  </Target>
 </Project>

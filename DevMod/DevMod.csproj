@@ -9,11 +9,6 @@
     <AssemblyName>DevMod</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugLinux|AnyCPU' ">
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="AfterBuild" command="../bin/Patcher.exe patch Mod.dll DevMod.dll" workingdir="../bin" />
-      </CustomCommands>
-    </CustomCommands>
     <OutputPath>..\bin</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <ConsolePause>false</ConsolePause>
@@ -24,11 +19,6 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' ">
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="AfterBuild" command="../bin/Patcher.exe patch Mod.dll DevMod.dll" workingdir="../bin" />
-      </CustomCommands>
-    </CustomCommands>
     <OutputPath>..\bin</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <ConsolePause>false</ConsolePause>
@@ -47,6 +37,10 @@
       <Project>{B1DF3728-5F4C-4987-8213-4DCE21255B0F}</Project>
       <Name>Patcher</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Mod\Mod.csproj">
+      <Project>{5C1AA190-DD28-41A1-8DD2-FEF3A9DEE28A}</Project>
+      <Name>Mod</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="TowerFall">
@@ -58,4 +52,7 @@
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Graphics" />
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Net" />
   </ItemGroup>
+  <Target Name="AfterBuild">
+    <Exec Command="../bin/Patcher.exe patch Mod.dll DevMod.dll" WorkingDirectory="../bin" />
+  </Target>
 </Project>
