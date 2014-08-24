@@ -2,9 +2,15 @@
 
 A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyright 2013 Matt Thorson, obviously).
 
+* [Included Mods](#included-mods)
+  * [Game Modes](#game-modes)
+  * [Variants](#variants)
+* [Installation](#installation)
+* [Hacking](#hacking)
+
 # Included Mods
 
-## New Game Modes
+## Game Modes
 
 ### Respawn
 <p align="center">
