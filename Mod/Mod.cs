@@ -557,6 +557,15 @@ namespace Mod
 		{
 		}
 
+		void RemoveGhostAndRespawn(int playerIndex)
+		{
+			if (activeGhosts[playerIndex] != null) {
+				this.RespawnPlayer(playerIndex);
+				activeGhosts[playerIndex].RemoveSelf();
+				activeGhosts[playerIndex] = null;
+			}
+		}
+
 		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
 		{
 			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
@@ -565,14 +574,11 @@ namespace Mod
 			if (killerIndex == playerIndex || killerIndex == -1) {
 				if (this.Session.CurrentLevel.LivingPlayers == 0) {
 					var otherPlayers = TFGame.Players.Select((playing, idx) => playing && idx != playerIndex ? (int?)idx : null).Where(idx => idx != null).ToList();
-					this.RespawnPlayer(new Random().Choose(otherPlayers).Value);
+					var randomPlayer = new Random().Choose(otherPlayers).Value;
+					RemoveGhostAndRespawn(randomPlayer);
 				}
 			} else {
-				if (activeGhosts[killerIndex] != null) {
-					this.RespawnPlayer(killerIndex);
-					activeGhosts[killerIndex].RemoveSelf();
-					activeGhosts[killerIndex] = null;
-				}
+				RemoveGhostAndRespawn(killerIndex);
 			}
 		}
 	}
