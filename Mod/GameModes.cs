@@ -206,7 +206,7 @@ namespace Mod
 			}
 		}
 
-		protected void RespawnPlayer(int playerIndex)
+		protected Player RespawnPlayer(int playerIndex)
 		{
 			List<Vector2> spawnPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
 
@@ -215,6 +215,7 @@ namespace Mod
 			this.Session.CurrentLevel.Add(player);
 			player.Flash(120, null);
 			Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
+			return player;
 		}
 
 		protected virtual void AfterOnPlayerDeath(Player player)
@@ -337,10 +338,20 @@ namespace Mod
 		{
 		}
 
-		void RemoveGhostAndRespawn(int playerIndex)
+		void RemoveGhostAndRespawn(int playerIndex, Vector2 position=default(Vector2))
 		{
 			if (activeGhosts[playerIndex] != null) {
-				this.RespawnPlayer(playerIndex);
+				var ghost = activeGhosts[playerIndex];
+				var player = this.RespawnPlayer(playerIndex);
+				// if we've been given a position, make sure the ghost spawns at that position and
+				// retains its speed pre-spawn.
+				if (position != default(Vector2)) {
+					player.Position.X = position.X;
+					player.Position.Y = position.Y;
+
+					player.Speed.X = ghost.Speed.X;
+					player.Speed.Y = ghost.Speed.Y;
+				}
 				activeGhosts[playerIndex].RemoveSelf();
 				activeGhosts[playerIndex] = null;
 			}
@@ -358,7 +369,7 @@ namespace Mod
 					RemoveGhostAndRespawn(randomPlayer);
 				}
 			} else {
-				RemoveGhostAndRespawn(killerIndex);
+				RemoveGhostAndRespawn(killerIndex, position);
 			}
 		}
 	}
