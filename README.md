@@ -9,13 +9,16 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 ### Respawn
 
 ![](img/respawn.gif?raw=true)
+![](img/respawn.png?raw=true)
 ![](img/respawn2.gif?raw=true)
 
 Not shown on the replay gifs: our awesome in-game kill count HUDs!
 
 ### Crawl
 
+![](img/crawl.png?raw=true)
 ![](img/crawl.gif?raw=true)
+![](img/crawl2.gif?raw=true)
 
 *Variants: No Balancing, No Treasure, Start with Toy Arrows*
 
@@ -44,6 +47,8 @@ This may be our most ambitious mod yet, and therefore not quite yet balanced.
 ![](img/infiniteArrows2.gif?raw=true)
 
 ### No Dodge Cooldowns ![](Mod/Content/Atlas/menuAtlas/variants/noDodgeCooldowns.png?raw=true)
+
+![](img/noDodgeCooldown.gif?raw=true)
 
 ### Gotta Go Fast! ![](Mod/Content/Atlas/menuAtlas/variants/gottaGoFast.png?raw=true)
 
