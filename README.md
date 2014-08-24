@@ -7,8 +7,11 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 ## New Game Modes
 
 ### Respawn
+<p align="center">
+  <img src="img/respawn.png?raw=true"/>
+</p>
 
-![](img/respawn.png?raw=true)
+
 ![](img/respawn.gif?raw=true)
 ![](img/respawn2.gif?raw=true)
 
