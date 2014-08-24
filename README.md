@@ -16,7 +16,8 @@ Not shown on the replay gifs: our awesome in-game kill count HUDs!
 ### Crawl
 
 ![](img/crawl.gif?raw=true)
-*Variants: No Balancing, No Treasure, Start with Toy Arrows
+
+*Variants: No Balancing, No Treasure, Start with Toy Arrows*
 
 Inspired by a certain other indie game - kill human players to regain your humanity!  
 Unlike in other game modes, you score points for killing enemy ghosts.  
