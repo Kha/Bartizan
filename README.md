@@ -19,7 +19,10 @@ Not shown on the replay gifs: our awesome in-game kill count HUDs!
 
 ### Crawl
 
-![](img/crawl.png?raw=true)
+<p align="center">
+ <img src="img/crawl.png?raw=true"/>
+</p>
+
 ![](img/crawl.gif?raw=true)
 ![](img/crawl2.gif?raw=true)
 
