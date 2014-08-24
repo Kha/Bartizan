@@ -8,8 +8,8 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 
 ### Respawn
 
-![](img/respawn.gif?raw=true)
 ![](img/respawn.png?raw=true)
+![](img/respawn.gif?raw=true)
 ![](img/respawn2.gif?raw=true)
 
 Not shown on the replay gifs: our awesome in-game kill count HUDs!
