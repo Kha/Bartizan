@@ -51,7 +51,7 @@ namespace Wizard
 					TryCopy(Path.Combine(destPath, file), Path.Combine(file));
 				}
 				TryCopy(Path.Combine(destPath, "TowerFall.exe"), Path.Combine("Original", "TowerFall.exe"));
-				Patcher.Patcher.Patch();
+				Patcher.Patcher.Patch("Mod.dll");
 
 				foreach (string file in RelativeEnumerateFiles(Path.Combine(destPath, "Content", "Atlas"))) {
 					TryCopy(Path.Combine(destPath, "Content", "Atlas", file), Path.Combine("Original", "Content", "Atlas", file));

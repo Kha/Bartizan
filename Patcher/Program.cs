@@ -41,7 +41,6 @@ namespace Patcher
 		{
 		}
 
-
 		/// <summary>
 		/// Unseal, publicize, virtualize.
 		/// </summary>
@@ -78,10 +77,10 @@ namespace Patcher
 		/// As you can probably guess from the code, this is wholly incomplete and will certainly break and have to be
 		/// extended in the future.
 		/// </summary>
-		public static void Patch()
+		public static void Patch(string modModulePath)
 		{
-			var baseModule = ModuleDefinition.ReadModule("Original/TowerFall.exe");
-			var modModule = ModuleDefinition.ReadModule("Mod.dll");
+			var baseModule = ModuleDefinition.ReadModule("TowerFall.exe");
+			var modModule = ModuleDefinition.ReadModule(modModulePath);
 
 			Func<TypeReference, bool> patchType = (type) => {
 				if (type.Scope == modModule) {
@@ -233,18 +232,22 @@ namespace Patcher
 			}
 		}
 
-		public static void Main (string[] args)
+		public static int Main (string[] args)
 		{
-			if (args.Length != 1) {
-				Console.WriteLine("Usage: Patcher.exe makeBaseImage | patch");
-				return;
+			if (args.Length == 0) {
+				Console.WriteLine("Usage: Patcher.exe makeBaseImage | patch <patch DLLs>*");
+				return -1;
 			}
 			if (args[0] == "makeBaseImage") {
 				MakeBaseImage();
-			} else {
-				Patch();
+			} else if (args[0] == "patch") {
+				File.Copy("Original/TowerFall.exe", "TowerFall.exe", overwrite: true);
+				foreach (var modModulePath in args.Skip(1)) {
+					Patch(modModulePath);
+				}
 				PatchResources();
 			}
+			return 0;
 		}
 	}
 }
