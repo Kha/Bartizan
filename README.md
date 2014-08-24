@@ -71,7 +71,8 @@ This may be our most ambitious mod yet, and therefore not quite yet balanced.
 Installation
 ============
 
-* Extract [Bartizan.zip](), then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
+* Extract [Bartizan.Linux.zip](https://github.com/Kha/Bartizan/releases/download/v1.0/Bartizan.Linux.zip) or [Bartizan.Windows.zip](https://github.com/Kha/Bartizan/releases/download/v1.0/Bartizan.Windows.zip), respectively, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
+* On new TowerFall releases, you'll need to delete the `Original` folder and re-run the Wizard (and possibly need a new release of Bartizan if the update has broken any mods).
 * To uninstall, simply reset your TowerFall installation by selecting `Properties -> Local Files -> Verify Integrity of Game Cache` in the Steam context menu for TowerFall.
 
 Hacking
