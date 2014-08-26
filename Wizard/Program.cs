@@ -20,6 +20,7 @@ namespace Wizard
 
 		static IEnumerable<string> RelativeEnumerateFiles(string path)
 		{
+			path = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 			return Directory.EnumerateFiles(path).Select(file => file.Substring(path.Length + 1));
 		}
 
