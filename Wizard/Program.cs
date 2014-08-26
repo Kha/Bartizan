@@ -23,6 +23,11 @@ namespace Wizard
 			return Directory.EnumerateFiles(path).Select(file => file.Substring(path.Length + 1));
 		}
 
+		static bool IsProbablyTowerFallDir(string path)
+		{
+			return File.Exists(Path.Combine(path, "TowerFall.exe"));
+		}
+
 		[STAThread]
 		static void Main()
 		{
@@ -35,13 +40,16 @@ namespace Wizard
 					Application.EnableVisualStyles();
 					Application.SetCompatibleTextRenderingDefault(false);
 
-					destPath = Environment.GetEnvironmentVariable("ProgramFiles(x86)") + @"\Steam\SteamApps\common\TowerFall";
-					while (!Directory.Exists(destPath))
+					destPath = (Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? "") + @"\Steam\SteamApps\common\TowerFall";
+					if (!IsProbablyTowerFallDir(destPath))
+						destPath = (Environment.GetEnvironmentVariable("HOME") ?? "") + "/.steam/steam/SteamApps/common/TowerFall";
+					while (!IsProbablyTowerFallDir(destPath)) {
 						using (var dialog = new FolderBrowserDialog { Description = @"Please select the SteamApps\common\TowerFall directory." }) {
 							if (dialog.ShowDialog() != DialogResult.OK)
 								return;
 							destPath = dialog.SelectedPath;
 						}
+					}
 				} else {
 					destPath = Environment.GetCommandLineArgs()[1];
 				}
