@@ -21,6 +21,7 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 ![](img/respawn.gif?raw=true)
 ![](img/respawn2.gif?raw=true)
 
+Best played with Gunn Style activated, obviously.  
 Not shown on the replay gifs: our awesome in-game kill count HUDs!
 
 ### Crawl
@@ -34,9 +35,9 @@ Not shown on the replay gifs: our awesome in-game kill count HUDs!
 
 *Variants: No Balancing, No Treasure, Start with Toy Arrows*
 
-Inspired by a certain other indie game - kill human players to regain your humanity!  
+Inspired by a certain other indie game - kill living players to regain your humanity!  
 Unlike in other game modes, you score points for killing enemy ghosts.  
-This may be our most ambitious mod yet, and therefore not quite yet balanced.
+This may be our most ambitious mod yet, and therefore not quite yet balanced. Toy arrows are a good way to nerf living players if you feel the ghosts are too weak.
 
 ## Variants
 
@@ -45,6 +46,8 @@ This may be our most ambitious mod yet, and therefore not quite yet balanced.
 ![](img/noHeadBounce.gif?raw=true)
 
 ### No Ledge Grab ![](Mod/Content/Atlas/menuAtlas/variants/noLedgeGrab.png?raw=true)
+
+Koala hunters no more.
 
 ### Awfully Slow Arrows ![](Mod/Content/Atlas/menuAtlas/variants/awfullySlowArrows.png?raw=true)
 
@@ -71,7 +74,7 @@ This may be our most ambitious mod yet, and therefore not quite yet balanced.
 Installation
 ============
 
-* Extract [Bartizan.Linux.zip](https://github.com/Kha/Bartizan/releases/download/v1.0/Bartizan.Linux.zip) or [Bartizan.Windows.zip](https://github.com/Kha/Bartizan/releases/download/v1.0/Bartizan.Windows.zip), respectively, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
+* Extract [Bartizan.Linux.zip](https://github.com/Kha/Bartizan/releases/download/v0.0.1/Bartizan.Linux.zip) or [Bartizan.Windows.zip](https://github.com/Kha/Bartizan/releases/download/v0.0.1/Bartizan.Windows.zip), respectively, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
 * On new TowerFall releases, you'll need to delete the `Original` folder and re-run the Wizard (and possibly need a new release of Bartizan if the update has broken any mods).
 * To uninstall, simply reset your TowerFall installation by selecting `Properties -> Local Files -> Verify Integrity of Game Cache` in the Steam context menu for TowerFall.
 
