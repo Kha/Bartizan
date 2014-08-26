@@ -69,6 +69,8 @@ namespace Wizard
 
 				if (gui) {
 					MessageBox.Show("Success!");
+				} else {
+					Console.WriteLine("Success!");
 				}
 			} catch (Exception e) {
 				if (gui) {
