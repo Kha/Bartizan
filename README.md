@@ -5,6 +5,7 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 * [Included Mods](#included-mods)
   * [Game Modes](#game-modes)
   * [Variants](#variants)
+  * [Dev Mods](#dev-mods)
 * [Installation](#installation)
 * [Hacking](#hacking)
 
@@ -71,10 +72,27 @@ Koala hunters no more.
 
 ![](img/gottagofast.gif?raw=true)
 
+## Dev Mods
+
+These mods are intended for development or are simply unfinished and only available if you compile Bartizan from source. If enough people want to see one of these included in the official releases, we may flesh them out and include them.
+
+### Keyboard Config for Second Player
+
+Walk/aim with WASD, jump J, shoot K, dash Right Shift
+
+### Slow Time Orb on Back Button
+
+For those perfect-looking quest runs. Only available for Xbox game pads.
+
+### End Round on Center (Steam) Button
+
+Useful for immediately saving a scene to a gif. Only available for Xbox game pads.
+
+
 Installation
 ============
 
-* Extract [Bartizan.Linux.zip](https://github.com/Kha/Bartizan/releases/download/v0.0.1/Bartizan.Linux.zip) or [Bartizan.Windows.zip](https://github.com/Kha/Bartizan/releases/download/v0.0.1/Bartizan.Windows.zip), respectively, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
+* Extract the zip from our [releases](https://github.com/Kha/Bartizan/releases/) according to you platform, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
 * On new TowerFall releases, you'll need to delete the `Original` folder and re-run the Wizard (and possibly need a new release of Bartizan if the update has broken any mods).
 * To uninstall, simply reset your TowerFall installation by selecting `Properties -> Local Files -> Verify Integrity of Game Cache` in the Steam context menu for TowerFall.
 
