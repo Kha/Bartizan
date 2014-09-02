@@ -22,7 +22,9 @@ namespace Mod
 				case RespawnRoundLogic.Mode:
 					return new RespawnRoundLogic(session);
 				case MobRoundLogic.Mode:
-					return new MobRoundLogic(session);
+                    return new MobRoundLogic(session);
+                case GemRoundLogic.Mode:
+                    return new GemRoundLogic(session);
 				default:
 					return RoundLogic.GetRoundLogic(session);
 			}
@@ -34,7 +36,7 @@ namespace Mod
 	{
 		static List<Modes> VersusModes = new List<Modes> {
 			Modes.LastManStanding, Modes.HeadHunters, Modes.TeamDeathmatch,
-			RespawnRoundLogic.Mode,	MobRoundLogic.Mode
+			RespawnRoundLogic.Mode,	MobRoundLogic.Mode,	GemRoundLogic.Mode
 		};
 
 		public MyVersusModeButton(Vector2 position, Vector2 tweenFrom)
@@ -48,7 +50,9 @@ namespace Mod
 				case RespawnRoundLogic.Mode:
 					return "RESPAWN";
 				case MobRoundLogic.Mode:
-					return "CRAWL";
+                    return "CRAWL";
+                case GemRoundLogic.Mode:
+                    return "KING OF THE GEM";
 				default:
 					return VersusModeButton.GetModeName(mode);
 			}
@@ -60,7 +64,9 @@ namespace Mod
 				case RespawnRoundLogic.Mode:
 					return TFGame.MenuAtlas["gameModes/respawn"];
 				case MobRoundLogic.Mode:
-					return TFGame.MenuAtlas["gameModes/crawl"];
+                    return TFGame.MenuAtlas["gameModes/crawl"];
+                case GemRoundLogic.Mode:
+                    return TFGame.MenuAtlas["gameModes/respawn"];
 				default:
 					return VersusModeButton.GetModeIcon(mode);
 			}
@@ -107,12 +113,16 @@ namespace Mod
 		}
 
 		public override int GoalScore {
-			get {
+            get {
+                int goals;
 				switch (this.Mode) {
 					case RespawnRoundLogic.Mode:
-					case MobRoundLogic.Mode:
-						int goals = this.PlayerGoals(5, 8, 10);
-						return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
+                    case MobRoundLogic.Mode:
+                        goals = this.PlayerGoals(5, 8, 10);
+                        return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
+                    case GemRoundLogic.Mode:
+                        goals = this.PlayerGoals(3, 4, 5);
+                        return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
 					default:
 						return base.GoalScore;
 				}
@@ -131,8 +141,14 @@ namespace Mod
 		public override void Render()
 		{
 			var mode = MainMenu.VersusMatchSettings.Mode;
-			if (mode == RespawnRoundLogic.Mode || mode == MobRoundLogic.Mode) {
+            if (mode == RespawnRoundLogic.Mode || mode == MobRoundLogic.Mode)
+            {
 				MainMenu.VersusMatchSettings.Mode = Modes.HeadHunters;
+				base.Render();
+				MainMenu.VersusMatchSettings.Mode = mode;
+			} else if (mode == GemRoundLogic.Mode)
+            {
+				MainMenu.VersusMatchSettings.Mode = Modes.LastManStanding;
 				base.Render();
 				MainMenu.VersusMatchSettings.Mode = mode;
 			} else {
@@ -150,8 +166,10 @@ namespace Mod
 			: base(session)
 		{
 			this._oldMode = session.MatchSettings.Mode;
-			if (this._oldMode == RespawnRoundLogic.Mode || this._oldMode == MobRoundLogic.Mode)
+            if (this._oldMode == RespawnRoundLogic.Mode || this._oldMode == MobRoundLogic.Mode)
 				session.MatchSettings.Mode = Modes.HeadHunters;
+            //else if (this._oldMode == GemRoundLogic.Mode)
+             //   session.MatchSettings.Mode = Modes.LastManStanding;
 		}
 
 		public override void TweenOut()
@@ -223,7 +241,7 @@ namespace Mod
 			this.RespawnPlayer(player.PlayerIndex);
 		}
 
-		public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
+        public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
 		{
 			base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
 
@@ -373,4 +391,236 @@ namespace Mod
 			}
 		}
 	}
+
+
+    public class GemRoundLogic : RoundLogic
+    {
+        public const Modes Mode = (Modes)44;
+
+        private Counter endDelay;
+        private Counter pointDelay;
+        private int gemOwner;
+        private GemModePointer pointer;
+
+        private int CROWN_ROUND_LENGTH = 15;
+
+        public GemRoundLogic(Session session)
+            : base(session, canHaveMiasma: false)
+        {
+        }
+
+        public override void OnLevelLoadFinish()
+        {
+            base.OnLevelLoadFinish();
+            base.Session.CurrentLevel.Add<VersusStart>(new VersusStart(base.Session));
+            base.Players = base.SpawnPlayersFFA();
+            // spawn gem
+            List<Vector2> portalPositions = this.Session.CurrentLevel.GetXMLPositions("Spawner");
+            Vector2 pos = new Random().Choose(portalPositions);
+            GemModePickup gem = new GemModePickup(pos);
+            base.Session.CurrentLevel.Add<GemModePickup>(gem);
+            pointer = new GemModePointer(new Vector2(gem.Position.X, gem.Position.Y - 24f), gem);
+            base.Session.CurrentLevel.Add<GemModePointer>(pointer);
+            gemOwner = -1;
+            this.pointDelay = new Counter();
+            this.pointDelay.Set(60 * CROWN_ROUND_LENGTH);
+            this.endDelay = new Counter();
+            this.endDelay.Set(90);
+        }
+
+        public override bool CheckForAllButOneDead()
+        {
+            return false;
+        }
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+            if (base.RoundStarted)
+            {
+                if (pointDelay)
+                {
+                    pointDelay.Update();
+                    var str = string.Concat("", Math.Ceiling(pointDelay.Value / 60f));
+                    if (pointer.str != str) {
+                        pointer.str = str;
+                        pointer.textOrigin = (TFGame.Font.MeasureString(str) / 2f).Floor();
+                        Sounds.sfx_arrowToggle.Play(160f, 0.5f);
+                    }
+                    return;
+                }
+                pointer.str = "0";
+                if (gemOwner != -1)
+                {
+                    base.AddScore(gemOwner, 1);
+                    if (base.Session.GetWinner() != -1) {
+                        this.Session.CurrentLevel.LightingLayer.SetSpotlight(new LevelEntity[] { Session.CurrentLevel.GetPlayer(gemOwner) });
+                        FinalKillNoSpotlight();
+                    } else Sounds.char_ready[Session.CurrentLevel.GetPlayer(gemOwner).CharacterIndex].Play(160f, 1f);
+                    gemOwner = -1;
+                }
+                if (endDelay)
+                {
+                    endDelay.Update();
+                    return;
+                }
+                base.Session.EndRound();
+            }
+        }
+
+        protected Player RespawnPlayer(int playerIndex)
+        {
+            List<Vector2> spawnPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
+
+            var player = new MyPlayer(playerIndex, new Random().Choose(spawnPositions), Allegiance.Neutral, Allegiance.Neutral,
+                            this.Session.GetPlayerInventory(playerIndex), Player.HatState.Normal, frozen: false);
+            this.Session.CurrentLevel.Add(player);
+            player.Flash(60, null);
+            Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
+            return player;
+        }
+
+        protected virtual void AfterOnPlayerDeath(Player player)
+        {
+            this.RespawnPlayer(player.PlayerIndex);
+        }
+
+        public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
+        {
+            base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
+
+            if (playerIndex == gemOwner)
+            {
+                GemModePickup gem = new GemModePickup(position);
+                base.Session.CurrentLevel.Add<GemModePickup>(gem);
+                pointer.entity = gem;
+                if (pointDelay) gemOwner = -1;
+            }
+
+            this.AfterOnPlayerDeath(player);
+        }
+
+        public void OnGemPickup(Player owner) {
+            if (pointDelay) gemOwner = owner.PlayerIndex;
+            pointer.entity = owner;
+        }
+    }
+
+    public class GemModePickup : Pickup
+    {
+        public Sprite<int> sprite;
+
+        private SineWave sine;
+
+        public GemModePickup(Vector2 position)
+            : base(position, position)
+        {
+            base.Collider = new Hitbox(16f, 16f, -8f, -8f);
+            base.Tag(new GameTags[] { GameTags.PlayerCollectible, GameTags.LightSource });
+            SineWave sineWave = new SineWave(120);
+            SineWave sineWave1 = sineWave;
+            this.sine = sineWave;
+            base.Add(sineWave1);
+        }
+
+        public override void Added()
+        {
+            base.Added();
+            this.sprite = TFGame.SpriteData.GetSpriteInt("Gem5");
+            this.sprite.Play(0, false);
+            base.Add(this.sprite);
+        }
+
+        public override void OnPlayerCollide(Player player)
+        {
+            if (base.Level.Session.RoundLogic is GemRoundLogic) {
+                ((GemRoundLogic)base.Level.Session.RoundLogic).OnGemPickup(player);
+            }
+            Sounds.sfx_gemCollect.Play(base.X, 1f);
+            base.RemoveSelf();
+        }
+
+        public override void TweenUpdate(Tween tween)
+        {
+            this.sprite.Rotation = MathHelper.Lerp(0f, 6.28318548f, Ease.CubeOut(tween.Percent));
+            this.sprite.Scale = Vector2.One * tween.Eased;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            this.sprite.Position = new Vector2(3f * this.sine.Value, 3f * this.sine.ValueOverTwo);
+        }
+    }
+
+    public class GemModePointer : LevelEntity
+    {
+        private Color color1;
+
+        private Color color2;
+
+        public Vector2 textOrigin;
+
+        private Color currentColor;
+
+        public Entity entity;
+
+        public String str = "15";
+
+        public GemModePointer(Vector2 position, Entity entity)
+            : base(position)
+        {
+            this.color1 = Player.Colors[5];
+            this.color2 = Player.LightColors[5];
+            base.Depth = -1000;
+            base.Tag(GameTags.LightSource);
+            this.currentColor = color1;
+            this.textOrigin = (TFGame.Font.MeasureString("15") / 2f).Floor();
+            this.entity = entity;
+            Alarm.Set(this, 10, new Action(this.FlipColor), Alarm.AlarmMode.Looping);
+        }
+
+        private void FlipColor()
+        {
+            if (this.currentColor == this.color1)
+            {
+                this.currentColor = this.color2;
+                return;
+            }
+            this.currentColor = this.color1;
+        }
+
+        public override void Render()
+        {
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (i != 0 || j != 0)
+                    {
+                        Draw.SpriteBatch.DrawString(TFGame.Font, str, this.Position.Floor() + new Vector2((float)i, (float)j), (Color.Black * this.LightAlpha) * 0.5f, 0f, this.textOrigin, 1f, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 0f);
+                    }
+                }
+            }
+            Draw.SpriteBatch.DrawString(TFGame.Font, str, this.Position.Floor(), this.currentColor, 0f, this.textOrigin, 1f, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 0f);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (entity is GemModePickup)
+            {
+                var gem = (GemModePickup)entity;
+                X = entity.X + gem.sprite.Position.X;
+                Y = entity.Y + gem.sprite.Position.Y - 12f;
+            }
+            else if (entity is Player)
+            {
+                X = entity.X;
+                var player = (Player)entity;
+                if (player.State == Player.PlayerStates.Ducking || player.DodgeSliding) Y = entity.Y - 12f;
+                else Y = entity.Y - 24f;
+            }
+        }
+    }
 }

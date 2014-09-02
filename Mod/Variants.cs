@@ -5,6 +5,7 @@ using TowerFall;
 using Microsoft.Xna.Framework;
 using Patcher;
 using Monocle;
+using System.Reflection;
 
 namespace Mod
 {
@@ -102,7 +103,6 @@ namespace Mod
 			if (!((MyMatchVariants)Level.Session.MatchSettings.Variants).NoHeadBounce[this.PlayerIndex])
 				base.HurtBouncedOn(bouncerIndex);
 		}
-
 	}
 
 	[Patch]
