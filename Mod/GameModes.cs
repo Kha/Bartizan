@@ -507,7 +507,7 @@ namespace Mod
 
         public void OnGemPickup(Player owner) {
             gemOwner = owner.PlayerIndex;
-            pointer = new GemModePointer(new Vector2(owner.Position.X, owner.Position.Y - 24f), owner);
+            pointer = new GemModePointer(owner);
             base.Session.CurrentLevel.Add<GemModePointer>(pointer);
             this.pointDelay = new Counter();
             this.pointDelay.Set(60 * CROWN_ROUND_LENGTH);
@@ -519,7 +519,6 @@ namespace Mod
         public Sprite<int> sprite;
 
         private SineWave sine;
-        private Sprite<int> light;
 
         public GemModePickup(Vector2 position)
             : base(position, position)
@@ -528,9 +527,8 @@ namespace Mod
             base.Tag(new GameTags[] { GameTags.PlayerCollectible, GameTags.LightSource });
 
             this.LightRadius = 50f;
-            //this.LightColor = Color.White;
+            this.LightColor = Player.LightColors[5].Invert();
             this.LightVisible = true;
-            //this.LightAlpha = 0.4f;
 
             SineWave sineWave = new SineWave(120);
             SineWave sineWave1 = sineWave;
@@ -582,13 +580,18 @@ namespace Mod
 
         public String str = "5";
 
-        public GemModePointer(Vector2 position, Player player)
-            : base(position)
+        public GemModePointer(Player player)
+            : base(new Vector2(player.Position.X, player.Position.Y - 24f))
         {
             this.color1 = Player.Colors[5];
             this.color2 = Player.LightColors[5];
             base.Depth = -1000;
             base.Tag(GameTags.LightSource);
+
+            this.LightRadius = 50f;
+            this.LightColor = Player.LightColors[5].Invert();
+            this.LightVisible = true;
+
             this.currentColor = color1;
             this.textOrigin = (TFGame.Font.MeasureString("5") / 2f).Floor();
             this.player = player;
