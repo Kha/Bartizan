@@ -66,7 +66,7 @@ namespace Mod
 				case MobRoundLogic.Mode:
                     return TFGame.MenuAtlas["gameModes/crawl"];
                 case GemRoundLogic.Mode:
-                    return TFGame.MenuAtlas["gameModes/respawn"];
+                    return TFGame.MenuAtlas["gameModes/kotgem"];
 				default:
 					return VersusModeButton.GetModeIcon(mode);
 			}
@@ -118,10 +118,8 @@ namespace Mod
 				switch (this.Mode) {
 					case RespawnRoundLogic.Mode:
                     case MobRoundLogic.Mode:
-                        goals = this.PlayerGoals(5, 8, 10);
-                        return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
                     case GemRoundLogic.Mode:
-                        goals = this.PlayerGoals(3, 4, 5);
+                        goals = this.PlayerGoals(5, 8, 10);
                         return (int)Math.Ceiling(((float)goals * MatchSettings.GoalMultiplier[(int)this.MatchLength]));
 					default:
 						return base.GoalScore;
@@ -400,9 +398,10 @@ namespace Mod
         private Counter endDelay;
         private Counter pointDelay;
         private int gemOwner;
+        private bool roundOver = false;
         private GemModePointer pointer;
 
-        private int CROWN_ROUND_LENGTH = 15;
+        private int CROWN_ROUND_LENGTH = 5;
 
         public GemRoundLogic(Session session)
             : base(session, canHaveMiasma: false)
@@ -414,16 +413,18 @@ namespace Mod
             base.OnLevelLoadFinish();
             base.Session.CurrentLevel.Add<VersusStart>(new VersusStart(base.Session));
             base.Players = base.SpawnPlayersFFA();
-            // spawn gem
-            List<Vector2> portalPositions = this.Session.CurrentLevel.GetXMLPositions("Spawner");
-            Vector2 pos = new Random().Choose(portalPositions);
+
+            roundOver = false;
+
+            List<Vector2> gemPositions = this.Session.CurrentLevel.GetXMLPositions("BigTreasureChest");
+            if (gemPositions.Count == 0) gemPositions = this.Session.CurrentLevel.GetXMLPositions("Spawner");
+            if (gemPositions.Count == 0) gemPositions = this.Session.CurrentLevel.GetXMLPositions("TreasureChest");
+            Vector2 pos = new Random().Choose(gemPositions);
             GemModePickup gem = new GemModePickup(pos);
             base.Session.CurrentLevel.Add<GemModePickup>(gem);
-            pointer = new GemModePointer(new Vector2(gem.Position.X, gem.Position.Y - 24f), gem);
-            base.Session.CurrentLevel.Add<GemModePointer>(pointer);
+
             gemOwner = -1;
-            this.pointDelay = new Counter();
-            this.pointDelay.Set(60 * CROWN_ROUND_LENGTH);
+
             this.endDelay = new Counter();
             this.endDelay.Set(90);
         }
@@ -436,28 +437,32 @@ namespace Mod
         public override void OnUpdate()
         {
             base.OnUpdate();
-            if (base.RoundStarted)
+            if (base.RoundStarted && (gemOwner != -1 || roundOver))
             {
-                if (pointDelay)
-                {
-                    pointDelay.Update();
-                    var str = string.Concat("", Math.Ceiling(pointDelay.Value / 60f));
-                    if (pointer.str != str) {
-                        pointer.str = str;
-                        pointer.textOrigin = (TFGame.Font.MeasureString(str) / 2f).Floor();
-                        Sounds.sfx_arrowToggle.Play(160f, 0.5f);
-                    }
-                    return;
-                }
-                pointer.str = "0";
                 if (gemOwner != -1)
                 {
+                    if (pointDelay && !CheckForAllButOneDead())
+                    {
+                        pointDelay.Update();
+                        var str = string.Concat("", Math.Ceiling(pointDelay.Value / 60f));
+                        if (pointer.str != str)
+                        {
+                            pointer.str = str;
+                            pointer.textOrigin = (TFGame.Font.MeasureString(str) / 2f).Floor();
+                            Sounds.sfx_arrowToggle.Play(160f, 0.6f);
+                        }
+                        return;
+                    }
+                    pointer.str = "0";
                     base.AddScore(gemOwner, 1);
-                    if (base.Session.GetWinner() != -1) {
+                    if (base.Session.GetWinner() != -1)
+                    {
                         this.Session.CurrentLevel.LightingLayer.SetSpotlight(new LevelEntity[] { Session.CurrentLevel.GetPlayer(gemOwner) });
                         FinalKillNoSpotlight();
-                    } else Sounds.char_ready[Session.CurrentLevel.GetPlayer(gemOwner).CharacterIndex].Play(160f, 1f);
+                    }
+                    else Sounds.char_ready[Session.CurrentLevel.GetPlayer(gemOwner).CharacterIndex].Play(160f, 1f);
                     gemOwner = -1;
+                    roundOver = true;
                 }
                 if (endDelay)
                 {
@@ -482,7 +487,7 @@ namespace Mod
 
         protected virtual void AfterOnPlayerDeath(Player player)
         {
-            this.RespawnPlayer(player.PlayerIndex);
+            //if (!roundOver) this.RespawnPlayer(player.PlayerIndex);
         }
 
         public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
@@ -493,16 +498,19 @@ namespace Mod
             {
                 GemModePickup gem = new GemModePickup(position);
                 base.Session.CurrentLevel.Add<GemModePickup>(gem);
-                pointer.entity = gem;
-                if (pointDelay) gemOwner = -1;
+                pointer.RemoveSelf();
+                gemOwner = -1;
             }
 
             this.AfterOnPlayerDeath(player);
         }
 
         public void OnGemPickup(Player owner) {
-            if (pointDelay) gemOwner = owner.PlayerIndex;
-            pointer.entity = owner;
+            gemOwner = owner.PlayerIndex;
+            pointer = new GemModePointer(new Vector2(owner.Position.X, owner.Position.Y - 24f), owner);
+            base.Session.CurrentLevel.Add<GemModePointer>(pointer);
+            this.pointDelay = new Counter();
+            this.pointDelay.Set(60 * CROWN_ROUND_LENGTH);
         }
     }
 
@@ -511,12 +519,19 @@ namespace Mod
         public Sprite<int> sprite;
 
         private SineWave sine;
+        private Sprite<int> light;
 
         public GemModePickup(Vector2 position)
             : base(position, position)
         {
             base.Collider = new Hitbox(16f, 16f, -8f, -8f);
             base.Tag(new GameTags[] { GameTags.PlayerCollectible, GameTags.LightSource });
+
+            this.LightRadius = 50f;
+            //this.LightColor = Color.White;
+            this.LightVisible = true;
+            //this.LightAlpha = 0.4f;
+
             SineWave sineWave = new SineWave(120);
             SineWave sineWave1 = sineWave;
             this.sine = sineWave;
@@ -563,11 +578,11 @@ namespace Mod
 
         private Color currentColor;
 
-        public Entity entity;
+        public Player player;
 
-        public String str = "15";
+        public String str = "5";
 
-        public GemModePointer(Vector2 position, Entity entity)
+        public GemModePointer(Vector2 position, Player player)
             : base(position)
         {
             this.color1 = Player.Colors[5];
@@ -575,8 +590,8 @@ namespace Mod
             base.Depth = -1000;
             base.Tag(GameTags.LightSource);
             this.currentColor = color1;
-            this.textOrigin = (TFGame.Font.MeasureString("15") / 2f).Floor();
-            this.entity = entity;
+            this.textOrigin = (TFGame.Font.MeasureString("5") / 2f).Floor();
+            this.player = player;
             Alarm.Set(this, 10, new Action(this.FlipColor), Alarm.AlarmMode.Looping);
         }
 
@@ -608,18 +623,17 @@ namespace Mod
         public override void Update()
         {
             base.Update();
-            if (entity is GemModePickup)
+            if (!player.Dead)
             {
-                var gem = (GemModePickup)entity;
-                X = entity.X + gem.sprite.Position.X;
-                Y = entity.Y + gem.sprite.Position.Y - 12f;
+                X = player.X;
+                if (player.State == Player.PlayerStates.Ducking || player.DodgeSliding) Y = player.Y - 16f;
+                else Y = player.Y - 28f;
             }
-            else if (entity is Player)
+            else
             {
+                var entity = Level.GetPlayerOrCorpse(player.PlayerIndex);
                 X = entity.X;
-                var player = (Player)entity;
-                if (player.State == Player.PlayerStates.Ducking || player.DodgeSliding) Y = entity.Y - 12f;
-                else Y = entity.Y - 24f;
+                Y = entity.Y - 16f;
             }
         }
     }
