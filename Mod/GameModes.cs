@@ -437,6 +437,7 @@ namespace Mod
         public override void OnUpdate()
         {
             base.OnUpdate();
+            if (Session.CurrentLevel.LivingPlayers == 0) roundOver = true;
             if (base.RoundStarted && (gemOwner != -1 || roundOver))
             {
                 if (gemOwner != -1)
