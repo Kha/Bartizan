@@ -98,7 +98,8 @@ namespace Patcher
 				}
 				if (modType.IsArray) {
 					var type = mapType(modType.GetElementType());
-					return new ArrayType(type);
+                    if (type.Name.Contains("Trials")) return new ArrayType(new ArrayType(type));
+                    return new ArrayType(type);
 				}
 				if (patchType(modType))
 					modType = modType.Resolve().BaseType;
@@ -182,10 +183,11 @@ namespace Patcher
 									}
 								}
 								else if (instr.Operand is FieldReference) {
-									var field = (FieldReference)instr.Operand;
+                                    var field = (FieldReference)instr.Operand;
 									instr.Operand = new FieldReference(field.Name, mapType(field.FieldType), mapType(field.DeclaringType));
-								} else if (instr.Operand is TypeReference)
+								} else if (instr.Operand is TypeReference) {
 									instr.Operand = mapType((TypeReference)instr.Operand);
+                                }
 							}
 							foreach (var var in method.Body.Variables)
 								var.VariableType = mapType(var.VariableType);
@@ -236,8 +238,8 @@ namespace Patcher
 		{
 			if (args.Length == 0) {
 				Console.WriteLine("Usage: Patcher.exe makeBaseImage | patch <patch DLLs>*");
-				return -1;
-			}
+				return 0;
+            }
 			if (args[0] == "makeBaseImage") {
 				MakeBaseImage();
 			} else if (args[0] == "patch") {
