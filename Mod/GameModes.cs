@@ -437,7 +437,6 @@ namespace Mod
         public override void OnUpdate()
         {
             base.OnUpdate();
-            if (Session.CurrentLevel.LivingPlayers == 0) roundOver = true;
             if (base.RoundStarted && (gemOwner != -1 || roundOver))
             {
                 if (gemOwner != -1)
@@ -455,6 +454,7 @@ namespace Mod
                         return;
                     }
                     pointer.str = "0";
+                    base.Session.CurrentLevel.Ending = true;
                     base.AddScore(gemOwner, 1);
                     if (base.Session.GetWinner() != -1)
                     {
@@ -474,23 +474,6 @@ namespace Mod
             }
         }
 
-        protected Player RespawnPlayer(int playerIndex)
-        {
-            List<Vector2> spawnPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
-
-            var player = new MyPlayer(playerIndex, new Random().Choose(spawnPositions), Allegiance.Neutral, Allegiance.Neutral,
-                            this.Session.GetPlayerInventory(playerIndex), Player.HatState.Normal, frozen: false);
-            this.Session.CurrentLevel.Add(player);
-            player.Flash(60, null);
-            Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
-            return player;
-        }
-
-        protected virtual void AfterOnPlayerDeath(Player player)
-        {
-            //if (!roundOver) this.RespawnPlayer(player.PlayerIndex);
-        }
-
         public override void OnPlayerDeath(Player player, PlayerCorpse corpse, int playerIndex, DeathCause cause, Vector2 position, int killerIndex)
         {
             base.OnPlayerDeath(player, corpse, playerIndex, cause, position, killerIndex);
@@ -503,7 +486,10 @@ namespace Mod
                 gemOwner = -1;
             }
 
-            this.AfterOnPlayerDeath(player);
+            if (base.Session.CurrentLevel.LivingPlayers == 0) {
+                base.Session.CurrentLevel.Ending = true;
+                roundOver = true;
+            }
         }
 
         public void OnGemPickup(Player owner) {

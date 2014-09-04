@@ -24,7 +24,8 @@ namespace Mod
 		[PerPlayer]
 		public Variant NoDodgeCooldowns;
 		[PerPlayer]
-		public Variant GottaGoFast;
+        public Variant GottaGoFast;
+        public Variant InfiniteBrambles;
 
 		public MyMatchVariants()
 		{
@@ -137,4 +138,19 @@ namespace Mod
 				base.ArrowUpdate();
 		}
 	}
+
+    [Patch]
+    public class MyBrambles : Brambles
+    {
+        public MyBrambles()
+            : base()
+        {
+        }
+
+        public override void TweenOut()
+        {
+            if (((MyMatchVariants)this.Level.Session.MatchSettings.Variants).InfiniteBrambles) return;
+            base.TweenOut();
+        }
+    }
 }
