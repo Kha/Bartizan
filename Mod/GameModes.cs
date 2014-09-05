@@ -168,8 +168,6 @@ namespace Mod
 			this._oldMode = session.MatchSettings.Mode;
             if (this._oldMode == RespawnRoundLogic.Mode || this._oldMode == MobRoundLogic.Mode)
 				session.MatchSettings.Mode = Modes.HeadHunters;
-            //else if (this._oldMode == GemRoundLogic.Mode)
-             //   session.MatchSettings.Mode = Modes.LastManStanding;
 		}
 
 		public override void TweenOut()
@@ -410,6 +408,12 @@ namespace Mod
         {
         }
 
+        public override void OnRoundStart()
+        {
+            base.OnRoundStart();
+            base.SpawnTreasureChestsVersus();
+        }
+
         public override void OnLevelLoadFinish()
         {
             base.OnLevelLoadFinish();
@@ -422,8 +426,7 @@ namespace Mod
             if (gemPositions.Count == 0) gemPositions = this.Session.CurrentLevel.GetXMLPositions("Spawner");
             if (gemPositions.Count == 0) gemPositions = this.Session.CurrentLevel.GetXMLPositions("TreasureChest");
             Vector2 pos = new Random().Choose(gemPositions);
-            GemModePickup gem = new GemModePickup(pos);
-            base.Session.CurrentLevel.Add<GemModePickup>(gem);
+            base.Session.CurrentLevel.Add<GemModeTreasureChest>(new GemModeTreasureChest(pos));
 
             gemOwner = -1;
 
@@ -482,8 +485,7 @@ namespace Mod
 
             if (playerIndex == gemOwner)
             {
-                GemModePickup gem = new GemModePickup(position);
-                base.Session.CurrentLevel.Add<GemModePickup>(gem);
+                base.Session.CurrentLevel.Add<GemModePickup>(new GemModePickup(position, position));
                 pointer.RemoveSelf();
                 gemOwner = -1;
             }
@@ -503,14 +505,59 @@ namespace Mod
         }
     }
 
+    public class GemModeTreasureChest : TreasureChest
+    {
+        private Counter openCounter;
+        private Counter spawnCounter;
+
+        public GemModeTreasureChest(Vector2 position)
+            : base(position, TreasureChest.Types.Special, TreasureChest.AppearModes.Normal, Pickups.Wings)
+        {
+            this.openCounter = new Counter();
+            this.openCounter.Set(120);
+            this.spawnCounter = new Counter();
+        }
+
+        public override bool ReadyToAppear()
+        {
+            return true;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (this.spawnCounter)
+            {
+                this.spawnCounter.Update();
+                if (!this.spawnCounter)
+                {
+                    this.Level.Remove(this.Level[GameTags.PlayerCollectible]);
+                    this.Level.Add<GemModePickup>(new GemModePickup(this.Position, Pickup.GetTargetPositionFromChest(base.Level, this.Position - Vector2.UnitY)));
+                }
+                return;
+            }
+            if (this.openCounter)
+            {
+                this.openCounter.Update();
+                if (!this.openCounter)
+                {
+                    OpenChest(-1);
+                    base.Flash(30, new Action(this.RemoveSelf));
+                    this.spawnCounter.Set(1);
+                }
+                return;
+            }
+        }
+    }
+
     public class GemModePickup : Pickup
     {
         public Sprite<int> sprite;
 
         private SineWave sine;
 
-        public GemModePickup(Vector2 position)
-            : base(position, position)
+        public GemModePickup(Vector2 position, Vector2 target)
+            : base(position, target)
         {
             base.Collider = new Hitbox(16f, 16f, -8f, -8f);
             base.Tag(new GameTags[] { GameTags.PlayerCollectible, GameTags.LightSource });
