@@ -5,7 +5,6 @@ using TowerFall;
 using Microsoft.Xna.Framework;
 using Patcher;
 using Monocle;
-using System.Reflection;
 
 namespace Mod
 {
