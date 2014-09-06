@@ -399,7 +399,9 @@ namespace Mod
         private Counter pointDelay;
         private int gemOwner;
         private bool roundOver = false;
+
         private GemModePointer pointer;
+        private Miasma miasma;
 
         private int CROWN_ROUND_LENGTH = 5;
 
@@ -442,6 +444,11 @@ namespace Mod
         public override void OnUpdate()
         {
             base.OnUpdate();
+            if (CheckForAllButOneDead() && gemOwner == -1 && miasma == null)
+            {
+                miasma = new Miasma();
+                this.Session.CurrentLevel.Add<Miasma>(miasma);
+            }
             if (base.RoundStarted && (gemOwner != -1 || roundOver))
             {
                 if (gemOwner != -1)
@@ -511,7 +518,7 @@ namespace Mod
         private Counter spawnCounter;
 
         public GemModeTreasureChest(Vector2 position)
-            : base(position, TreasureChest.Types.Special, TreasureChest.AppearModes.Normal, Pickups.Bomb)
+            : base(position, TreasureChest.Types.Special, TreasureChest.AppearModes.Normal, Pickups.Mirror)
         {
             this.openCounter = new Counter();
             this.openCounter.Set(120);
