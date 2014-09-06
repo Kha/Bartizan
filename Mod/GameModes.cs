@@ -511,7 +511,7 @@ namespace Mod
         private Counter spawnCounter;
 
         public GemModeTreasureChest(Vector2 position)
-            : base(position, TreasureChest.Types.Special, TreasureChest.AppearModes.Normal, Pickups.Wings)
+            : base(position, TreasureChest.Types.Special, TreasureChest.AppearModes.Normal, Pickups.Bomb)
         {
             this.openCounter = new Counter();
             this.openCounter.Set(120);
