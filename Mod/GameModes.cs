@@ -444,7 +444,7 @@ namespace Mod
         public override void OnUpdate()
         {
             base.OnUpdate();
-            if (CheckForAllButOneDead() && gemOwner == -1 && miasma == null)
+            if (CheckForAllButOneDead() && miasma == null)
             {
                 miasma = new Miasma();
                 this.Session.CurrentLevel.Add<Miasma>(miasma);
@@ -479,6 +479,7 @@ namespace Mod
                 }
                 if (endDelay)
                 {
+                    if (miasma != null) miasma.Dissipate();
                     endDelay.Update();
                     return;
                 }
