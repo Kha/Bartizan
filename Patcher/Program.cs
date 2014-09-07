@@ -97,7 +97,7 @@ namespace Patcher
 					return modType;
 				}
 				if (modType.IsArray) {
-					var type = mapType(modType.GetElementType());
+					var type = mapType(((ArrayType)modType).ElementType);
 					return new ArrayType(type);
 				}
 				if (patchType(modType))
