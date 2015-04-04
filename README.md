@@ -92,7 +92,7 @@ Useful for immediately saving a scene to a gif. Only available for Xbox game pad
 Installation
 ============
 
-* Extract the zip from our [releases](https://github.com/Kha/Bartizan/releases/) according to you platform, then start `Wizard.exe`. This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
+* Extract the zip from our [releases](https://github.com/Kha/Bartizan/releases/) according to you platform, then start `Wizard.exe` (`mono Wizard.exe <path to TowerFall installation>` from a Linux shell). This will patch TowerFall.exe and the graphics resources, and save the original files in a new folder `Original`.
 * On new TowerFall releases, you'll need to delete the `Original` folder and re-run the Wizard (and possibly need a new release of Bartizan if the update has broken any mods).
 * To uninstall, simply reset your TowerFall installation by selecting `Properties -> Local Files -> Verify Integrity of Game Cache` in the Steam context menu for TowerFall.
 
@@ -102,10 +102,10 @@ Hacking
 While most of Bartizan was developed using MonoDevelop on Linux, using Visual Studio or any other IDE on Windows should work just as well. We haven't put any time into getting it to work on OS X, and at a cursory glance it looks like while the Patcher works, the generated TowerFall.exe crashes the runtime so bad not even the stacktrace can be displayed, so... OS X support isn't likely to happen.
 If you're an OS X / mono wizard and want to take a look at how to fix this, we'd love the help.
 
-* Copy Steam/SteamApps/common/TowerFall to bin/Original (or at least TowerFall.exe and Content/Atlas, to save some copying time)
+* Copy Steam/SteamApps/common/TowerFall to bin/Original (or at least FNA.dll, TowerFall.exe and Content/Atlas, to save some copying time)
 * Build Bartizan.sln. The AfterBuild targets should do all the dirty work:
   * Using [Mono.Cecil](https://github.com/jbevain/cecil), the base image `BaseTowerFall.exe` is derived from `Original/TowerFall.exe` by marking members of TowerFall classes as public and virtual (where applicable) so that we can use/override them in `Mod.dll` (and `DevMod.dll`, which is ignored by the Wizard and contains the development-only mods).
-  * Any members of classes marked as `[Patch]` in `Mod.dll` will be merged back into their respective base class to form the resulting `TowerFall.exe`.
-* Copy (or just symlink) the new `TowerFall.exe`, `*Mod.dll` and `Content/` back to the TowerFall Steam directory.
+  * Any members of classes marked as `[Patch]` in `*Mod.dll` will be merged back into their respective base class to form the resulting `TowerFall.exe`.
+* Copy (or just symlink) the new `TowerFall.exe`, `*Mod.dll` and `Content/Atlas/*` back to the TowerFall Steam directory.
 
 As an aside, due to the rather unusual way we're patching the game, you won't be able to use all of the fancy C# language features in your mods. If you're planning on using obscure features, expect obscure error messages.

@@ -33,7 +33,9 @@
     <Reference Include="TowerFall">
       <HintPath>..\bin\BaseTowerFall.exe</HintPath>
     </Reference>
-    <Reference Condition=" '$(Configuration)' == 'DebugLinux' " Include="MonoGame.Framework" />
+    <Reference Condition=" '$(Configuration)' == 'DebugLinux' " Include="FNA">
+      <HintPath>..\bin\Original\FNA.dll</HintPath>
+    </Reference>
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework" />
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Game" />
     <Reference Condition=" '$(Configuration)' == 'DebugWindows' " Include="Microsoft.Xna.Framework.Graphics" />
