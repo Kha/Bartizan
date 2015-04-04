@@ -1,50 +1,55 @@
 ﻿using TowerFall;
+using Monocle;
+using Microsoft.Xna.Framework;
 using Patcher;
+using System.Collections.Generic;
 
 
 namespace Mod
 {
-	// FIXME: still needs spawn points for 3rd and 4th player etc.
-	//[Patch]
+	[Patch]
 	public class MyRollcallElement : RollcallElement
 	{
-		public MyRollcallElement(int playerIndex)
-			: base(playerIndex)
+		public MyRollcallElement(int playerIndex) : base(playerIndex) { }
+
+		public override void ForceStart()
 		{
+			MyVersusPlayerMatchResults.PlayerWins = new int[4];
+			base.ForceStart();
 		}
 
-		public override int MaxPlayers {
-			get {
-				return (MainMenu.RollcallMode == MainMenu.RollcallModes.Trials) ? 1 : 4;
-			}
+		public override void StartVersus()
+		{
+			MyVersusPlayerMatchResults.PlayerWins = new int[4];
+			base.StartVersus();
 		}
 	}
 
 	[Patch]
-	public class MyQuestRoundLogic : QuestRoundLogic
+	public class MyVersusPlayerMatchResults : VersusPlayerMatchResults
 	{
-		public MyQuestRoundLogic(Session session)
-			: base(session)
+		public static int[] PlayerWins;
+
+		OutlineText winsText;
+
+		public MyVersusPlayerMatchResults(Session session, VersusMatchResults matchResults, int playerIndex, Vector2 tweenFrom, Vector2 tweenTo, List<AwardInfo> awards) : base(session, matchResults, playerIndex, tweenFrom, tweenTo, awards)
 		{
+			if (session.MatchStats[playerIndex].Won)
+				PlayerWins[playerIndex]++;
+
+			if (PlayerWins[playerIndex] > 0) {
+				winsText = new OutlineText(TFGame.Font, PlayerWins[playerIndex].ToString(), this.gem.Position);
+				winsText.Color = Color.White;
+				winsText.OutlineColor = Color.Black;
+				this.Add(winsText);
+			}
 		}
 
-		public override void OnLevelLoadFinish()
+		public override void Render()
 		{
-			base.OnLevelLoadFinish();
-
-			base.Players = 0;
-			for (int i = 0; i < 4; i++) {
-				if (TFGame.Players[i]) {
-					base.Players++;
-					if (base.Players <= 2) {
-						// the first two players are already taken care of by base.
-						continue;
-					}
-					// This patch doesn't work with the injector because it doesn't yet support generics
-					//base.Session.CurrentLevel.Add<QuestPlayerHUD>(this.PlayerHUDs[i] = new QuestPlayerHUD(this, (base.Players % 2 == 0) ? Facing.Left : Facing.Right, i));
-					this.SpawnPlayer(i, false);
-				}
-			}
+			base.Render();
+			if (winsText != null)
+				winsText.Render();
 		}
 	}
 }

@@ -5,6 +5,7 @@ A mod framework for [TowerFall Ascension](http://www.towerfall-game.com/) (copyr
 * [Included Mods](#included-mods)
   * [Game Modes](#game-modes)
   * [Variants](#variants)
+  * [UI Enhancements](#ui-enhancements)
   * [Dev Mods](#dev-mods)
 * [Installation](#installation)
 * [Hacking](#hacking)
@@ -71,6 +72,13 @@ Koala hunters no more.
 ### Gotta Go Fast! ![](Mod/Content/Atlas/menuAtlas/variants/gottaGoFast.png?raw=true)
 
 ![](img/gottagofast.gif?raw=true)
+
+## UI Enhancements
+
+### Win Counter
+![](img/winCounter.png?raw=true)
+
+Resets when you return to the Player Select screen.
 
 ## Dev Mods
 
