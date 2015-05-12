@@ -9,8 +9,8 @@ namespace DevMod
 	[Patch]
 	public class MyPlayer : Player
 	{
-		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatState hatState, bool frozen = true)
-			: base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen)
+		public MyPlayer(int playerIndex, Vector2 position, Allegiance allegiance, Allegiance teamColor, PlayerInventory inventory, Player.HatStates hatState, bool frozen, bool flash, bool indicator)
+			: base(playerIndex, position, allegiance, teamColor, inventory, hatState, frozen, flash, indicator)
 		{
 		}
 

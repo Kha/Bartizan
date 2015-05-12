@@ -146,8 +146,8 @@ namespace Mod
 	{
 		private Modes _oldMode;
 
-		public MyVersusRoundResults(Session session)
-			: base(session)
+		public MyVersusRoundResults(Session session, List<EventLog> events)
+			: base(session, events)
 		{
 			this._oldMode = session.MatchSettings.Mode;
 			if (this._oldMode == RespawnRoundLogic.Mode || this._oldMode == MobRoundLogic.Mode)
@@ -189,7 +189,7 @@ namespace Mod
 			base.Players = base.SpawnPlayersFFA();
 		}
 
-		public override bool CheckForAllButOneDead()
+		public override bool FFACheckForAllButOneDead()
 		{
 			return false;
 		}
@@ -211,7 +211,8 @@ namespace Mod
 			List<Vector2> spawnPositions = this.Session.CurrentLevel.GetXMLPositions("PlayerSpawn");
 
 			var player = new Player(playerIndex, new Random().Choose(spawnPositions), Allegiance.Neutral, Allegiance.Neutral,
-				            this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex), frozen: false);
+				            this.Session.GetPlayerInventory(playerIndex), this.Session.GetSpawnHatState(playerIndex),
+							frozen: false, flash: false, indicator: true);
 			this.Session.CurrentLevel.Add(player);
 			player.Flash(120, null);
 			Alarm.Set(player, 60, player.RemoveIndicator, Alarm.AlarmMode.Oneshot);
@@ -310,9 +311,9 @@ namespace Mod
 			this.corpse = corpse;
 		}
 
-		public override void Die(int killerIndex, Arrow arrow, Explosion explosion)
+		public override void Die(int killerIndex, Arrow arrow, Explosion explosion, ShockCircle circle)
 		{
-			base.Die(killerIndex, arrow, explosion);
+			base.Die(killerIndex, arrow, explosion, circle);
 			var mobLogic = this.Level.Session.RoundLogic as MobRoundLogic;
 			if (mobLogic != null) {
 				mobLogic.OnPlayerDeath(

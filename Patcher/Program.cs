@@ -208,7 +208,8 @@ namespace Patcher
 				var xml = XElement.Load(Path.Combine("Original", atlasPath + ".xml"));
 
 				string[] files = Directory.GetFiles(atlasPath, "*.png", SearchOption.AllDirectories);
-				int x = 700;
+				int x = 1720;
+				int y = 1700;
 
 				using (var baseImage = Bitmap.FromFile(Path.Combine("Original", atlasPath + ".png"))) {
 					using (var g = Graphics.FromImage(baseImage))
@@ -216,15 +217,15 @@ namespace Patcher
 							using (var image = Bitmap.FromFile(file)) {
 								string name = file.Substring(atlasPath.Length + 1).Replace(Path.DirectorySeparatorChar, '/');
 								name = name.Substring(0, name.Length - ".png".Length);
-								g.DrawImage(image, x, 1700);
+								g.DrawImage(image, x, y);
 								xml.Add(new XElement("SubTexture",
 									new XAttribute("name", name),
 									new XAttribute("x", x),
-									new XAttribute("y", 1700),
+									new XAttribute("y", y),
 									new XAttribute("width", image.Width),
 									new XAttribute("height", image.Height)
 								));
-								x += image.Width;
+								y += image.Height;
 							}
 					baseImage.Save(atlasPath + ".png");
 				}
