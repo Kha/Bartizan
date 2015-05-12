@@ -22,8 +22,6 @@ namespace Mod
 		public Variant InfiniteArrows;
 		[PerPlayer]
 		public Variant NoDodgeCooldowns;
-		[PerPlayer]
-		public Variant GottaGoFast;
 
 		public MyMatchVariants()
 		{
@@ -31,7 +29,6 @@ namespace Mod
 			this.CreateLinks(NoHeadBounce, NoTimeLimit);
 			this.CreateLinks(NoDodgeCooldowns, ShowDodgeCooldown);
 			this.CreateLinks(AwfullyFastArrows, AwfullySlowArrows);
-			this.CreateLinks(SpeedBoots, GottaGoFast);
 		}
 	}
 
@@ -56,34 +53,6 @@ namespace Mod
 				this.DodgeCooldown();
 			}
 			return base.GetDodgeExitState();
-		}
-
-		public override float MaxRunSpeed {
-			get {
-				float res = base.MaxRunSpeed;
-				if (((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex]) {
-					return res * 1.4f;
-				}
-				return res;
-			}
-		}
-
-		public override int NormalUpdate()
-		{
-			// SpeedBoots add little dust clouds below our feet... we want those too.
-			var gottaGoFast = ((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex];
-			bool hasSpeedBoots = Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex];
-			if (gottaGoFast) {
-				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult * 2f, null);
-				Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = true;
-			}
-			int res = base.NormalUpdate();
-			if (gottaGoFast) {
-				typeof(Engine).GetProperty("TimeMult").SetValue(null, Engine.TimeMult / 2f, null);
-			}
-			Level.Session.MatchSettings.Variants.SpeedBoots[this.PlayerIndex] = hasSpeedBoots;
-			((MyMatchVariants)Level.Session.MatchSettings.Variants).GottaGoFast[this.PlayerIndex] = gottaGoFast;
-			return res;
 		}
 
 		public override void ShootArrow()

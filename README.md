@@ -69,10 +69,6 @@ Koala hunters no more.
 
 ![](img/noDodgeCooldown.gif?raw=true)
 
-### Gotta Go Fast! ![](Mod/Content/Atlas/menuAtlas/variants/gottaGoFast.png?raw=true)
-
-![](img/gottagofast.gif?raw=true)
-
 ## UI Enhancements
 
 ### Win Counter
